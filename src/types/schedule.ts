@@ -21,7 +21,7 @@ export type SessionType =
     | 'workshop'
     | 'open-gym';
 
-export type SessionStatus = 'scheduled' | 'in-progress' | 'completed' | 'cancelled';
+export type SessionStatus = 'scheduled' | 'in-progress' | 'completed' | 'cancelled' | 'open' | 'full';
 
 export interface CreateSessionInput {
     title: string;
@@ -53,4 +53,6 @@ export const sessionStatusConfig: Record<SessionStatus, { label: string; color: 
     'in-progress': { label: 'In Progress', color: 'bg-emerald-100 text-emerald-700' },
     completed: { label: 'Completed', color: 'bg-zinc-100 text-zinc-600' },
     cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-700' },
+    open: { label: 'Open', color: 'bg-emerald-100 text-emerald-700' },
+    full: { label: 'Full', color: 'bg-amber-100 text-amber-700' },
 };

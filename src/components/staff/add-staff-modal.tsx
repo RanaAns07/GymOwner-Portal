@@ -34,9 +34,10 @@ const staffFormSchema = z.object({
     lastName: z.string().min(2, 'Last name must be at least 2 characters'),
     email: z.string().email('Please enter a valid email address'),
     phone: z.string().optional(),
-    role: z.enum(['trainer', 'receptionist', 'manager', 'nutritionist', 'physiotherapist']),
-    specializations: z.array(z.string()).min(1, 'Select at least one specialization'),
-    permissions: z.array(z.string()).min(1, 'Select at least one permission'),
+    role: z.enum(['trainer', 'receptionist', 'manager', 'nutritionist', 'physiotherapist', 'owner']),
+    specializations: z.array(z.string()),
+    permissions: z.array(z.string()),
+    password: z.string().optional(),
 });
 
 type StaffFormData = z.infer<typeof staffFormSchema>;
@@ -55,16 +56,14 @@ const steps = [
 const specializationOptions = [
     'Strength Training',
     'HIIT',
-    'Weight Loss',
     'Yoga',
     'Pilates',
-    'Flexibility',
-    'CrossFit',
-    'Functional Training',
-    'Boxing',
     'Cardio',
-    'Sports Nutrition',
-    'Diet Planning',
+    'Boxing',
+    'CrossFit',
+    'Nutrition',
+    'Weight Loss',
+    'Sports Performance',
     'Rehabilitation',
     'Pain Management',
     'Customer Service',
@@ -85,6 +84,7 @@ export function AddStaffModal({ open, onOpenChange }: AddStaffModalProps) {
             role: 'trainer',
             specializations: [],
             permissions: [],
+            password: '',
         },
     });
 

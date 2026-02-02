@@ -1,12 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
-    fetchStaffMembers,
-    fetchStaffMember,
-    createStaffMember,
-    updateStaffMember,
-    deleteStaffMember,
-} from '@/lib/mock-data/staff';
+    fetchStaffFromApi,
+    fetchStaffMemberFromApi,
+    createStaffMemberApi,
+    updateStaffMemberApi,
+    deleteStaffMemberApi,
+} from '@/lib/api/staff-api';
 import type { StaffMember, CreateStaffInput, UpdateStaffInput } from '@/types/staff';
 
 // Query keys
@@ -23,9 +23,9 @@ export function useStaffMembers(filters?: { role?: string; status?: string }) {
     return useQuery({
         queryKey: staffKeys.list(filters || {}),
         queryFn: async () => {
-            let data = await fetchStaffMembers();
+            let data = await fetchStaffFromApi();
 
-            // Apply filters
+            // Apply client-side filters if needed
             if (filters?.role) {
                 data = data.filter((staff) => staff.role === filters.role);
             }
@@ -42,7 +42,7 @@ export function useStaffMembers(filters?: { role?: string; status?: string }) {
 export function useStaffMember(id: string) {
     return useQuery({
         queryKey: staffKeys.detail(id),
-        queryFn: () => fetchStaffMember(id),
+        queryFn: () => fetchStaffMemberFromApi(id),
         enabled: !!id,
     });
 }
@@ -52,19 +52,15 @@ export function useCreateStaffMember() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (data: CreateStaffInput) =>
-            createStaffMember({
-                ...data,
-                status: 'active' as const,
-                avatar: undefined,
-            }),
+        mutationFn: (data: CreateStaffInput) => createStaffMemberApi(data),
         onSuccess: (newStaff) => {
             // Invalidate and refetch staff list
             queryClient.invalidateQueries({ queryKey: staffKeys.lists() });
             toast.success(`${newStaff.firstName} ${newStaff.lastName} has been added to your team!`);
         },
         onError: (error) => {
-            toast.error('Failed to add staff member. Please try again.');
+            const message = error instanceof Error ? error.message : 'Failed to add staff member';
+            toast.error(message);
             console.error('Create staff error:', error);
         },
     });
@@ -76,7 +72,7 @@ export function useUpdateStaffMember() {
 
     return useMutation({
         mutationFn: ({ id, data }: { id: string; data: UpdateStaffInput }) =>
-            updateStaffMember(id, data),
+            updateStaffMemberApi(id, data),
         onSuccess: (updatedStaff) => {
             if (updatedStaff) {
                 queryClient.invalidateQueries({ queryKey: staffKeys.lists() });
@@ -85,7 +81,8 @@ export function useUpdateStaffMember() {
             }
         },
         onError: (error) => {
-            toast.error('Failed to update staff member. Please try again.');
+            const message = error instanceof Error ? error.message : 'Failed to update staff member';
+            toast.error(message);
             console.error('Update staff error:', error);
         },
     });
@@ -96,14 +93,15 @@ export function useDeleteStaffMember() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (id: string) => deleteStaffMember(id),
+        mutationFn: (id: string) => deleteStaffMemberApi(id),
         onSuccess: (_, id) => {
             queryClient.invalidateQueries({ queryKey: staffKeys.lists() });
             queryClient.removeQueries({ queryKey: staffKeys.detail(id) });
             toast.success('Staff member removed successfully.');
         },
         onError: (error) => {
-            toast.error('Failed to remove staff member. Please try again.');
+            const message = error instanceof Error ? error.message : 'Failed to remove staff member';
+            toast.error(message);
             console.error('Delete staff error:', error);
         },
     });

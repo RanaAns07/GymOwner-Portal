@@ -25,8 +25,8 @@ interface PricingCardProps {
 }
 
 export function PricingCard({ plan, onEdit, onArchive, onDelete, featured }: PricingCardProps) {
-    const status = planStatusConfig[plan.status];
-    const isPopular = plan.subscriberCount > 50;
+    const status = planStatusConfig[plan.status ?? 'active'];
+    const isPopular = (plan.subscriberCount ?? 0) > 50;
 
     return (
         <Card

@@ -1,0 +1,165 @@
+
+> gym-portal@0.1.0 dev
+> next dev
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.23:3000
+- Environments: .env.local
+
+✓ Starting...
+✓ Ready in 940ms
+ GET /dashboard/staff 200 in 949ms (compile: 370ms, render: 579ms)
+ GET /avatars/owner.jpg 404 in 388ms (compile: 172ms, render: 216ms)
+[Proxy] GET http://3.147.66.56/api/v1/users/profiles/
+[Proxy] No Auth Header found in incoming request
+[Proxy] Response: 401 Unauthorized
+ GET /api/proxy/v1/users/profiles 401 in 1771ms (compile: 1005ms, render: 765ms)
+✓ Compiled in 3ms
+ GET /dashboard/staff 200 in 703ms (compile: 372ms, render: 331ms)
+ GET /dashboard/staff 200 in 297ms (compile: 28ms, render: 269ms)
+ GET /login?redirect=%2Fdashboard%2Fstaff 200 in 991ms (compile: 956ms, render: 35ms)
+✓ Compiled in 225ms
+✓ Compiled in 879ms
+✓ Compiled in 384ms
+ GET /login?redirect=%2Fdashboard%2Fstaff 200 in 64ms (compile: 4ms, render: 60ms)
+[Proxy] POST http://3.147.66.56/api/v1/users/auth/login/
+[Proxy] Response: 200 OK
+ POST /api/proxy/v1/users/auth/login 200 in 1177ms (compile: 56ms, render: 1121ms)
+ GET /dashboard 200 in 785ms (compile: 750ms, render: 35ms)
+ GET /avatars/owner.jpg 404 in 168ms (compile: 9ms, render: 159ms)
+ GET /dashboard/staff 200 in 162ms (compile: 74ms, render: 88ms)
+ GET /dashboard/staff 200 in 55ms (compile: 4ms, render: 51ms)
+[Proxy] GET http://3.147.66.56/api/v1/users/profiles/
+[Proxy] Response: 200 OK
+ GET /api/proxy/v1/users/profiles 200 in 364ms (compile: 61ms, render: 302ms)
+[Proxy] POST http://3.147.66.56/api/v1/users/profiles/create_staff/
+[Proxy] Response: 403 Forbidden
+ POST /api/proxy/v1/users/profiles/create_staff 403 in 664ms (compile: 34ms, render: 630ms)
+ GET /dashboard/staff 200 in 174ms (compile: 5ms, render: 169ms)
+[Proxy] GET http://3.147.66.56/api/v1/users/profiles/
+[Proxy] Response: 200 OK
+ GET /api/proxy/v1/users/profiles 200 in 1091ms (compile: 50ms, render: 1041ms)
+[Proxy] POST http://3.147.66.56/api/v1/users/profiles/create_staff/
+[Proxy] Response: 500 Internal Server Error
+ POST /api/proxy/v1/users/profiles/create_staff 500 in 3.5s (compile: 34ms, render: 3.4s)
+[Proxy] POST http://3.147.66.56/api/v1/users/profiles/create_staff/
+[Proxy] Response: 500 Internal Server Error
+ POST /api/proxy/v1/users/profiles/create_staff 500 in 3.0s (compile: 32ms, render: 3.0s)
+✓ Compiled in 145ms
+[Proxy] GET http://3.147.66.56/api/v1/users/profiles/
+[Proxy] Response: 200 OK
+ GET /api/proxy/v1/users/profiles 200 in 673ms (compile: 57ms, render: 616ms)
+ GET /dashboard/staff 200 in 359ms (compile: 147ms, render: 211ms)
+[Proxy] GET http://3.147.66.56/api/v1/users/profiles/
+[Proxy] Response: 200 OK
+ GET /api/proxy/v1/users/profiles 200 in 798ms (compile: 96ms, render: 702ms)
+[Proxy] POST http://3.147.66.56/api/v1/users/profiles/create_staff/
+[Proxy] Response: 500 Internal Server Error
+ POST /api/proxy/v1/users/profiles/create_staff 500 in 2.3s (compile: 31ms, render: 2.2s)
+ GET /dashboard/staff 200 in 66ms (compile: 5ms, render: 61ms)
+[Proxy] GET http://3.147.66.56/api/v1/users/profiles/
+[Proxy] Request Headers: {
+  authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzcwMDM5NjQ0LCJpYXQiOjE3NzAwMzYwNDQsImp0aSI6IjQ5OWU4YjRhNjE5ZTRhN2U5YmZmN2MxMTY1NjA2YTFmIiwidXNlcl9pZCI6ImEzYzNjZDFjLWMzMzEtNGM2ZC1hOTgwLWZjYjI2Njg4YzFmMiIsInJvbGUiOiJneW1fb3duZXIiLCJlbWFpbCI6Imd5bUBnbWFpbC5jb20iLCJ0ZW5hbnRfaWQiOiIzYjUyMTkwZi1lMTI3LTRhNGUtOTQyZS02YTJhNmNhZjZlZjMiLCJ0ZW5hbnRfbmFtZSI6Ik15R3ltIn0.J3pswK9kZFH-mrD67Gl8QXeDMUSEv7yIH-e-JvdOEic',
+  'content-type': 'application/json'
+}
+[Proxy] Response: 200 OK
+ GET /api/proxy/v1/users/profiles 200 in 838ms (compile: 179ms, render: 659ms)
+[Proxy] POST http://3.147.66.56/api/v1/users/profiles/create_staff/
+[Proxy] Request Headers: {
+  authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzcwMDM5NjQ0LCJpYXQiOjE3NzAwMzYwNDQsImp0aSI6IjQ5OWU4YjRhNjE5ZTRhN2U5YmZmN2MxMTY1NjA2YTFmIiwidXNlcl9pZCI6ImEzYzNjZDFjLWMzMzEtNGM2ZC1hOTgwLWZjYjI2Njg4YzFmMiIsInJvbGUiOiJneW1fb3duZXIiLCJlbWFpbCI6Imd5bUBnbWFpbC5jb20iLCJ0ZW5hbnRfaWQiOiIzYjUyMTkwZi1lMTI3LTRhNGUtOTQyZS02YTJhNmNhZjZlZjMiLCJ0ZW5hbnRfbmFtZSI6Ik15R3ltIn0.J3pswK9kZFH-mrD67Gl8QXeDMUSEv7yIH-e-JvdOEic',
+  'content-type': 'application/json'
+}
+[Proxy] Request Body: {"email":"ranaans.pk@gmail.com","password":"TempPassword123!","role":"trainer","nickname":"Ans Mustafa","profile_image":null}
+[Proxy] Response: 500 Internal Server Error
+ POST /api/proxy/v1/users/profiles/create_staff 500 in 2.3s (compile: 30ms, render: 2.3s)
+ GET /dashboard/staff 200 in 50ms (compile: 3ms, render: 47ms)
+[Proxy] GET http://3.147.66.56/api/v1/users/profiles/
+[Proxy] Request Headers: {
+  authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzcwMDM5NjQ0LCJpYXQiOjE3NzAwMzYwNDQsImp0aSI6IjQ5OWU4YjRhNjE5ZTRhN2U5YmZmN2MxMTY1NjA2YTFmIiwidXNlcl9pZCI6ImEzYzNjZDFjLWMzMzEtNGM2ZC1hOTgwLWZjYjI2Njg4YzFmMiIsInJvbGUiOiJneW1fb3duZXIiLCJlbWFpbCI6Imd5bUBnbWFpbC5jb20iLCJ0ZW5hbnRfaWQiOiIzYjUyMTkwZi1lMTI3LTRhNGUtOTQyZS02YTJhNmNhZjZlZjMiLCJ0ZW5hbnRfbmFtZSI6Ik15R3ltIn0.J3pswK9kZFH-mrD67Gl8QXeDMUSEv7yIH-e-JvdOEic',
+  'content-type': 'application/json'
+}
+[Proxy] Response: 200 OK
+ GET /api/proxy/v1/users/profiles 200 in 943ms (compile: 49ms, render: 894ms)
+[Proxy] DELETE http://3.147.66.56/api/v1/users/profiles/0280e816-0375-44f8-8465-0f2046833952/
+[Proxy] Request Headers: {
+  authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzcwMDM5NjQ0LCJpYXQiOjE3NzAwMzYwNDQsImp0aSI6IjQ5OWU4YjRhNjE5ZTRhN2U5YmZmN2MxMTY1NjA2YTFmIiwidXNlcl9pZCI6ImEzYzNjZDFjLWMzMzEtNGM2ZC1hOTgwLWZjYjI2Njg4YzFmMiIsInJvbGUiOiJneW1fb3duZXIiLCJlbWFpbCI6Imd5bUBnbWFpbC5jb20iLCJ0ZW5hbnRfaWQiOiIzYjUyMTkwZi1lMTI3LTRhNGUtOTQyZS02YTJhNmNhZjZlZjMiLCJ0ZW5hbnRfbmFtZSI6Ik15R3ltIn0.J3pswK9kZFH-mrD67Gl8QXeDMUSEv7yIH-e-JvdOEic',
+  'content-type': 'application/json'
+}
+[Proxy] Response: 204 No Content
+Proxy error: TypeError: Response constructor: Invalid response status code 204
+    at proxyRequest (src/app/api/proxy/[...path]/route.ts:85:16)
+  83 |         }
+  84 |
+> 85 |         return new NextResponse(data, {
+     |                ^
+  86 |             status: response.status,
+  87 |             headers: { 'Content-Type': contentTypeResponse || 'text/plain' },
+  88 |         });
+ DELETE /api/proxy/v1/users/profiles/0280e816-0375-44f8-8465-0f2046833952 500 in 1069ms (compile: 71ms, render: 998ms)
+[Proxy] GET http://3.147.66.56/api/v1/users/profiles/
+[Proxy] Request Headers: {
+  authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzcwMDM5NjQ0LCJpYXQiOjE3NzAwMzYwNDQsImp0aSI6IjQ5OWU4YjRhNjE5ZTRhN2U5YmZmN2MxMTY1NjA2YTFmIiwidXNlcl9pZCI6ImEzYzNjZDFjLWMzMzEtNGM2ZC1hOTgwLWZjYjI2Njg4YzFmMiIsInJvbGUiOiJneW1fb3duZXIiLCJlbWFpbCI6Imd5bUBnbWFpbC5jb20iLCJ0ZW5hbnRfaWQiOiIzYjUyMTkwZi1lMTI3LTRhNGUtOTQyZS02YTJhNmNhZjZlZjMiLCJ0ZW5hbnRfbmFtZSI6Ik15R3ltIn0.J3pswK9kZFH-mrD67Gl8QXeDMUSEv7yIH-e-JvdOEic',
+  'content-type': 'application/json'
+}
+[Proxy] Response: 200 OK
+ GET /api/proxy/v1/users/profiles 200 in 417ms (compile: 32ms, render: 386ms)
+✓ Compiled in 74ms
+ GET /dashboard/staff 200 in 382ms (compile: 93ms, render: 290ms)
+[Proxy] GET http://3.147.66.56/api/v1/users/profiles/
+[Proxy] Request Headers: {
+  authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzcwMDM5NjQ0LCJpYXQiOjE3NzAwMzYwNDQsImp0aSI6IjQ5OWU4YjRhNjE5ZTRhN2U5YmZmN2MxMTY1NjA2YTFmIiwidXNlcl9pZCI6ImEzYzNjZDFjLWMzMzEtNGM2ZC1hOTgwLWZjYjI2Njg4YzFmMiIsInJvbGUiOiJneW1fb3duZXIiLCJlbWFpbCI6Imd5bUBnbWFpbC5jb20iLCJ0ZW5hbnRfaWQiOiIzYjUyMTkwZi1lMTI3LTRhNGUtOTQyZS02YTJhNmNhZjZlZjMiLCJ0ZW5hbnRfbmFtZSI6Ik15R3ltIn0.J3pswK9kZFH-mrD67Gl8QXeDMUSEv7yIH-e-JvdOEic',
+  'content-type': 'application/json'
+}
+[Proxy] Response: 200 OK
+ GET /api/proxy/v1/users/profiles 200 in 631ms (compile: 49ms, render: 581ms)
+[Proxy] POST http://3.147.66.56/api/v1/users/profiles/create_staff/
+[Proxy] Request Headers: {
+  authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzcwMDM5NjQ0LCJpYXQiOjE3NzAwMzYwNDQsImp0aSI6IjQ5OWU4YjRhNjE5ZTRhN2U5YmZmN2MxMTY1NjA2YTFmIiwidXNlcl9pZCI6ImEzYzNjZDFjLWMzMzEtNGM2ZC1hOTgwLWZjYjI2Njg4YzFmMiIsInJvbGUiOiJneW1fb3duZXIiLCJlbWFpbCI6Imd5bUBnbWFpbC5jb20iLCJ0ZW5hbnRfaWQiOiIzYjUyMTkwZi1lMTI3LTRhNGUtOTQyZS02YTJhNmNhZjZlZjMiLCJ0ZW5hbnRfbmFtZSI6Ik15R3ltIn0.J3pswK9kZFH-mrD67Gl8QXeDMUSEv7yIH-e-JvdOEic',
+  'content-type': 'application/json'
+}
+[Proxy] Request Body: {"email":"ranaans.pk@gmail.com","password":"TempPassword123!","role":"trainer","nickname":"Ans Mustafa","bio":"","profile_image":null}
+[Proxy] Response: 201 Created
+ POST /api/proxy/v1/users/profiles/create_staff 201 in 1228ms (compile: 32ms, render: 1197ms)
+[Proxy] GET http://3.147.66.56/api/v1/users/profiles/
+[Proxy] Request Headers: {
+  authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzcwMDM5NjQ0LCJpYXQiOjE3NzAwMzYwNDQsImp0aSI6IjQ5OWU4YjRhNjE5ZTRhN2U5YmZmN2MxMTY1NjA2YTFmIiwidXNlcl9pZCI6ImEzYzNjZDFjLWMzMzEtNGM2ZC1hOTgwLWZjYjI2Njg4YzFmMiIsInJvbGUiOiJneW1fb3duZXIiLCJlbWFpbCI6Imd5bUBnbWFpbC5jb20iLCJ0ZW5hbnRfaWQiOiIzYjUyMTkwZi1lMTI3LTRhNGUtOTQyZS02YTJhNmNhZjZlZjMiLCJ0ZW5hbnRfbmFtZSI6Ik15R3ltIn0.J3pswK9kZFH-mrD67Gl8QXeDMUSEv7yIH-e-JvdOEic',
+  'content-type': 'application/json'
+}
+[Proxy] Response: 200 OK
+ GET /api/proxy/v1/users/profiles 200 in 372ms (compile: 66ms, render: 306ms)
+✓ Compiled in 49ms
+[Proxy] GET http://3.147.66.56/api/v1/users/profiles/
+[Proxy] Request Headers: {
+  authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzcwMDM5NjQ0LCJpYXQiOjE3NzAwMzYwNDQsImp0aSI6IjQ5OWU4YjRhNjE5ZTRhN2U5YmZmN2MxMTY1NjA2YTFmIiwidXNlcl9pZCI6ImEzYzNjZDFjLWMzMzEtNGM2ZC1hOTgwLWZjYjI2Njg4YzFmMiIsInJvbGUiOiJneW1fb3duZXIiLCJlbWFpbCI6Imd5bUBnbWFpbC5jb20iLCJ0ZW5hbnRfaWQiOiIzYjUyMTkwZi1lMTI3LTRhNGUtOTQyZS02YTJhNmNhZjZlZjMiLCJ0ZW5hbnRfbmFtZSI6Ik15R3ltIn0.J3pswK9kZFH-mrD67Gl8QXeDMUSEv7yIH-e-JvdOEic',
+  'content-type': 'application/json'
+}
+[Proxy] Response: 401 Unauthorized
+ GET /api/proxy/v1/users/profiles 401 in 571ms (compile: 34ms, render: 537ms)
+ GET /login?reason=session_expired 200 in 143ms (compile: 5ms, render: 137ms)
+ GET /login?reason=session_expired 200 in 158ms (compile: 8ms, render: 150ms)
+[Proxy] POST http://3.147.66.56/api/v1/users/auth/login/
+[Proxy] Request Headers: { 'content-type': 'application/json' }
+[Proxy] Request Body: {"email":"gym@gmail.com","password":"StrongPassword123"}
+[Proxy] Response: 401 Unauthorized
+ POST /api/proxy/v1/users/auth/login 401 in 1189ms (compile: 35ms, render: 1155ms)
+[Proxy] POST http://3.147.66.56/api/v1/users/auth/login/
+[Proxy] Request Headers: { 'content-type': 'application/json' }
+[Proxy] Request Body: {"email":"gym@gmail.com","password":"StrongPassword@123"}
+[Proxy] Response: 401 Unauthorized
+ POST /api/proxy/v1/users/auth/login 401 in 1096ms (compile: 32ms, render: 1064ms)
+[Proxy] POST http://3.147.66.56/api/v1/users/auth/login/
+[Proxy] Request Headers: { 'content-type': 'application/json' }
+[Proxy] Request Body: {"email":"gym@gmail.com","password":"Password@123"}
+[Proxy] Response: 200 OK
+ POST /api/proxy/v1/users/auth/login 200 in 1108ms (compile: 37ms, render: 1072ms)
+ GET /dashboard 200 in 62ms (compile: 4ms, render: 58ms)
+ GET /dashboard/staff 200 in 359ms (compile: 268ms, render: 91ms)
+ GET /dashboard/staff 200 in 71ms (compile: 5ms, render: 66ms)
+[Proxy] GET http://3.147.66.56/api/v1/users/profiles/
+[Proxy] Request Headers: {
+  authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzcwMDQzOTA4LCJpYXQiOjE3NzAwNDAzMDgsImp0aSI6ImY1Mzg2MDlmMTdlYTQ4MzI5NTNkM2UxNDcxZjFmY2I1IiwidXNlcl9pZCI6ImEzYzNjZDFjLWMzMzEtNGM2ZC1hOTgwLWZjYjI2Njg4YzFmMiIsInJvbGUiOiJneW1fb3duZXIiLCJlbWFpbCI6Imd5bUBnbWFpbC5jb20iLCJ0ZW5hbnRfaWQiOiIzYjUyMTkwZi1lMTI3LTRhNGUtOTQyZS02YTJhNmNhZjZlZjMiLCJ0ZW5hbnRfbmFtZSI6Ik15R3ltIn0.hIAtNi0DM73dAwo1B2p__nkF2Fd14RfUB4AOcG8cY44',
+  'content-type': 'application/json'
+}
+[Proxy] Response: 200 OK
+ GET /api/proxy/v1/users/profiles 200 in 340ms (compile: 61ms, render: 278ms)

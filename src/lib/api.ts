@@ -52,6 +52,18 @@ async function handleResponse<T>(response: Response): Promise<T> {
             }
         }
 
+        if (response.status === 401) {
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('auth_user');
+                localStorage.removeItem('auth_refresh_token');
+                // Avoid infinite redirect loops if already on login
+                if (!window.location.pathname.includes('/login')) {
+                    window.location.href = '/login?reason=session_expired';
+                }
+            }
+        }
+
         throw new ApiClientError(errorData.message, errorData.status, errorData.errors);
     }
 

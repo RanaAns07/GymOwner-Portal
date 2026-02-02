@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://3.147.66.56';
 
 /**
  * API Proxy Route Handler
@@ -23,8 +23,12 @@ async function proxyRequest(request: NextRequest, method: string) {
             );
         }
 
-        const targetPath = pathMatch[1];
-        const targetUrl = `${API_URL}/${targetPath}${url.search}`;
+        let targetPath = pathMatch[1];
+        // Ensure trailing slash for Django API compatibility
+        if (!targetPath.endsWith('/')) {
+            targetPath += '/';
+        }
+        const targetUrl = `${API_URL}/api/${targetPath}${url.search}`;
 
         // Forward headers, especially Authorization
         const headers = new Headers();
@@ -53,7 +57,15 @@ async function proxyRequest(request: NextRequest, method: string) {
         }
 
         // Forward the request to the backend
+        console.log(`[Proxy] ${method} ${targetUrl}`);
+        console.log('[Proxy] Request Headers:', Object.fromEntries(headers.entries()));
+
+        if (fetchOptions.body) {
+            console.log('[Proxy] Request Body:', fetchOptions.body);
+        }
+
         const response = await fetch(targetUrl, fetchOptions);
+        console.log(`[Proxy] Response: ${response.status} ${response.statusText}`);
 
         // Get response data
         const contentTypeResponse = response.headers.get('Content-Type');
