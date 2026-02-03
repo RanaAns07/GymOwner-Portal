@@ -1,107 +1,107 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const BACKEND_URL = 'http://3.147.66.56';
 
-/**
- * API Proxy Route Handler
- * 
- * This route intercepts all calls to /api/proxy/* and forwards them to the backend API.
- * This pattern is essential for HTTPS frontends (Vercel/Edge) communicating with HTTP backends,
- * avoiding Mixed Content errors in the browser.
- */
+export async function GET(
+    request: NextRequest,
+    { params }: { params: Promise<{ path: string[] }> }
+) {
+    const { path } = await params;
+    return proxyRequest(request, path, 'GET');
+}
 
-async function proxyRequest(request: NextRequest, method: string) {
+export async function POST(
+    request: NextRequest,
+    { params }: { params: Promise<{ path: string[] }> }
+) {
+    const { path } = await params;
+    return proxyRequest(request, path, 'POST');
+}
+
+export async function PUT(
+    request: NextRequest,
+    { params }: { params: Promise<{ path: string[] }> }
+) {
+    const { path } = await params;
+    return proxyRequest(request, path, 'PUT');
+}
+
+export async function DELETE(
+    request: NextRequest,
+    { params }: { params: Promise<{ path: string[] }> }
+) {
+    const { path } = await params;
+    return proxyRequest(request, path, 'DELETE');
+}
+
+export async function PATCH(
+    request: NextRequest,
+    { params }: { params: Promise<{ path: string[] }> }
+) {
+    const { path } = await params;
+    return proxyRequest(request, path, 'PATCH');
+}
+
+async function proxyRequest(
+    request: NextRequest,
+    path: string[],
+    method: string
+) {
+    // Get the full path and preserve trailing slashes
+    const fullPath = request.nextUrl.pathname;
+    const targetPath = fullPath.replace('/api/proxy', '/api');
+    const targetUrl = `${BACKEND_URL}${targetPath}`;
+
+    console.log('Proxying to:', targetUrl);
+
+    // Build headers, excluding host
+    const headers = new Headers();
+    request.headers.forEach((value, key) => {
+        if (key.toLowerCase() !== 'host') {
+            headers.set(key, value);
+        }
+    });
+
+    // Add backend host
+    headers.set('Host', '3.147.66.56');
+
     try {
-        // Extract the path after /api/proxy/
-        const url = new URL(request.url);
-        const pathMatch = url.pathname.match(/\/api\/proxy\/(.+)/);
-
-        if (!pathMatch) {
-            return NextResponse.json(
-                { error: 'Invalid proxy path' },
-                { status: 400 }
-            );
-        }
-
-        const targetPath = pathMatch[1];
-        const targetUrl = `${API_URL}/${targetPath}${url.search}`;
-
-        // Forward headers, especially Authorization
-        const headers = new Headers();
-        const authHeader = request.headers.get('Authorization');
-        const contentType = request.headers.get('Content-Type');
-
-        if (authHeader) {
-            headers.set('Authorization', authHeader);
-        }
-        if (contentType) {
-            headers.set('Content-Type', contentType);
-        }
-
-        // Build the fetch options
-        const fetchOptions: RequestInit = {
-            method,
-            headers,
-        };
-
-        // Include body for methods that support it
-        if (['POST', 'PUT', 'PATCH'].includes(method)) {
-            const body = await request.text();
-            if (body) {
-                fetchOptions.body = body;
+        // Get body for POST/PUT/PATCH/DELETE
+        let body: string | undefined = undefined;
+        if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+            try {
+                body = await request.text();
+            } catch (e) {
+                // Ignore body parsing errors
             }
         }
 
-        // Forward the request to the backend
-        const response = await fetch(targetUrl, fetchOptions);
+        console.log(`Proxying ${method} to:`, targetUrl, body ? `with body: ${body.substring(0, 100)}...` : '');
 
-        // Get response data
-        const contentTypeResponse = response.headers.get('Content-Type');
-        let data;
+        const response = await fetch(targetUrl, {
+            method,
+            headers,
+            body,
+            redirect: 'manual', // Don't follow redirects
+        });
 
-        if (contentTypeResponse?.includes('application/json')) {
-            data = await response.json();
-        } else {
-            data = await response.text();
-        }
+        // Get response body
+        const responseBody = await response.text();
 
-        // Return the response with appropriate status
-        if (contentTypeResponse?.includes('application/json')) {
-            return NextResponse.json(data, { status: response.status });
-        }
-
-        return new NextResponse(data, {
+        // Return the proxied response. NextResponse does not allow a body for 204, 205, and 304.
+        return new NextResponse(response.status === 204 || response.status === 205 || response.status === 304 ? null : responseBody, {
             status: response.status,
-            headers: { 'Content-Type': contentTypeResponse || 'text/plain' },
+            statusText: response.statusText,
+            headers: {
+                'Content-Type': response.headers.get('Content-Type') || 'application/json',
+                'Access-Control-Allow-Origin': '*',
+            },
         });
     } catch (error) {
         console.error('Proxy error:', error);
         return NextResponse.json(
-            {
-                error: 'Proxy request failed',
-                message: error instanceof Error ? error.message : 'Unknown error'
-            },
-            { status: 500 }
+            { error: 'Failed to connect to backend server' },
+            { status: 502 }
         );
     }
-}
-
-export async function GET(request: NextRequest) {
-    return proxyRequest(request, 'GET');
-}
-
-export async function POST(request: NextRequest) {
-    return proxyRequest(request, 'POST');
-}
-
-export async function PUT(request: NextRequest) {
-    return proxyRequest(request, 'PUT');
-}
-
-export async function PATCH(request: NextRequest) {
-    return proxyRequest(request, 'PATCH');
-}
-
-export async function DELETE(request: NextRequest) {
-    return proxyRequest(request, 'DELETE');
 }

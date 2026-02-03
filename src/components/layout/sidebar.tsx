@@ -25,7 +25,7 @@ import {
 interface NavItem {
     title: string;
     href: string;
-    icon: React.ElementType;
+    icon: React.ComponentType<any>;
     badge?: string;
 }
 

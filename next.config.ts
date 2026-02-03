@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Don't normalize URLs (required for Django which needs trailing slashes)
+  skipProxyUrlNormalize: true,
+  skipTrailingSlashRedirect: true,
 };
 
 export default nextConfig;
