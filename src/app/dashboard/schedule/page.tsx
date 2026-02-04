@@ -2,16 +2,25 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { WeeklyCalendar } from '@/components/schedule/weekly-calendar';
+import { CreateSessionModal } from '@/components/schedule/create-session-modal';
+import { EditSessionModal } from '@/components/schedule/edit-session-modal';
 import { useSessions } from '@/hooks/use-schedule';
 import { sessionTypeLabels, sessionTypeColors } from '@/types/schedule';
+import type { Session } from '@/types/schedule';
 import { Plus, ChevronLeft, ChevronRight, Calendar, Clock, Users } from 'lucide-react';
-import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 export default function SchedulePage() {
     const [currentWeek, setCurrentWeek] = useState(new Date());
     const { data: sessions, isLoading } = useSessions(currentWeek);
+
+    // Modal state
+    const [createModalOpen, setCreateModalOpen] = useState(false);
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+    const [slotDate, setSlotDate] = useState<Date | undefined>();
+    const [slotHour, setSlotHour] = useState<number | undefined>();
 
     // Format week range
     const getWeekRange = () => {
@@ -41,6 +50,23 @@ export default function SchedulePage() {
         setCurrentWeek(new Date());
     };
 
+    const handleSlotClick = (day: Date, hour: number) => {
+        setSlotDate(day);
+        setSlotHour(hour);
+        setCreateModalOpen(true);
+    };
+
+    const handleSessionClick = (session: Session) => {
+        setSelectedSession(session);
+        setEditModalOpen(true);
+    };
+
+    const handleNewSession = () => {
+        setSlotDate(undefined);
+        setSlotHour(undefined);
+        setCreateModalOpen(true);
+    };
+
     // Stats
     const totalSessions = sessions?.length || 0;
     const totalCapacity = sessions?.reduce((acc, s) => acc + s.capacity, 0) || 0;
@@ -56,7 +82,10 @@ export default function SchedulePage() {
                         Manage classes, sessions, and trainer schedules.
                     </p>
                 </div>
-                <Button className="gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 shadow-lg shadow-violet-500/25 hover:from-violet-700 hover:to-indigo-700">
+                <Button
+                    onClick={handleNewSession}
+                    className="gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 shadow-lg shadow-violet-500/25 hover:from-violet-700 hover:to-indigo-700"
+                >
                     <Plus className="h-4 w-4" />
                     New Session
                 </Button>
@@ -144,18 +173,24 @@ export default function SchedulePage() {
             <WeeklyCalendar
                 sessions={sessions || []}
                 isLoading={isLoading}
-                onSlotClick={(day, hour) => {
-                    const time = `${hour > 12 ? hour - 12 : hour}:00 ${hour >= 12 ? 'PM' : 'AM'}`;
-                    toast.info(`Create session on ${day.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })} at ${time}`);
-                }}
-                onSessionClick={(session) => {
-                    toast.info(`View session: ${session.title}`);
-                }}
+                onSlotClick={handleSlotClick}
+                onSessionClick={handleSessionClick}
+            />
+
+            {/* Create Session Modal */}
+            <CreateSessionModal
+                open={createModalOpen}
+                onOpenChange={setCreateModalOpen}
+                initialDate={slotDate}
+                initialHour={slotHour}
+            />
+
+            {/* Edit Session Modal */}
+            <EditSessionModal
+                open={editModalOpen}
+                onOpenChange={setEditModalOpen}
+                session={selectedSession}
             />
         </div>
     );
-}
-
-function cn(...classes: (string | boolean | undefined)[]) {
-    return classes.filter(Boolean).join(' ');
 }

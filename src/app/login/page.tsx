@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation";
 import { Dumbbell, ArrowRight, Mail, Lock, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { setTokens } from "../../lib/auth";
+import { useAuth } from "../../providers/auth-context";
 
 const MovingDumbbell = dynamic(() => import("../../components/landing/MovingDumbbell"), { ssr: false });
 const Clouds = dynamic(() => import("../../components/landing/Clouds"), { ssr: false });
 
 export default function LoginPage() {
-    const router = useRouter();
+    const { login } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -23,28 +23,11 @@ export default function LoginPage() {
         setError(null);
 
         try {
-            const response = await fetch("/api/proxy/v1/users/auth/login/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ email, password }),
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                // Success: store tokens and redirect
-                setTokens(data.access, data.refresh);
-                router.push("/dashboard");
-            } else {
-                // Error: show message
-                setError(data.message || data.detail || "Invalid email or password. Please try again.");
-            }
-        } catch (err) {
+            await login(email, password);
+            // Redirect is handled inside login()
+        } catch (err: any) {
             console.error("Login Error:", err);
-            setError("Something went wrong. Please check your connection and try again.");
-        } finally {
+            setError(err.message || "Invalid email or password. Please try again.");
             setIsLoading(false);
         }
     };

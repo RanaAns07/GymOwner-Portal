@@ -6,14 +6,17 @@ export interface PricingPlan {
     description: string;
     type: PlanType;
     price: number;
-    currency: string;
+    currency?: string;
     billingCycle: BillingCycle;
     features: string[];
-    status: PlanStatus;
+    status?: PlanStatus;
     maxClasses?: number; // For class packs
     validityDays?: number; // For class packs
-    createdAt: string;
-    subscriberCount: number;
+    createdAt?: string;
+    subscriberCount?: number;
+    isPopular?: boolean;
+    isActive?: boolean;
+    subscribers?: number;
 }
 
 export type PlanType = 'membership' | 'class-pack';

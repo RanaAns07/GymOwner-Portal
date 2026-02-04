@@ -11,7 +11,9 @@ export interface StaffMember {
     avatar?: string;
     specializations: string[];
     hireDate: string;
-    permissions: StaffPermission[];
+    permissions?: StaffPermission[];
+    clients?: number;
+    schedule?: string;
 }
 
 export type StaffRole =
@@ -19,7 +21,8 @@ export type StaffRole =
     | 'receptionist'
     | 'manager'
     | 'nutritionist'
-    | 'physiotherapist';
+    | 'physiotherapist'
+    | 'owner';
 
 export type StaffStatus = 'active' | 'on-leave' | 'inactive';
 
@@ -37,8 +40,10 @@ export interface CreateStaffInput {
     email: string;
     phone?: string;
     role: StaffRole;
-    specializations: string[];
-    permissions: StaffPermission[];
+    specializations?: string[];
+    permissions?: StaffPermission[];
+    password?: string;
+    bio?: string;
 }
 
 export interface UpdateStaffInput extends Partial<CreateStaffInput> {
@@ -52,6 +57,7 @@ export const roleLabels: Record<StaffRole, string> = {
     manager: 'Manager',
     nutritionist: 'Nutritionist',
     physiotherapist: 'Physiotherapist',
+    owner: 'Gym Owner',
 };
 
 // Status display config

@@ -4,12 +4,17 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PricingCard, PricingCardSkeleton } from '@/components/pricing/pricing-card';
-import { usePricingPlans } from '@/hooks/use-pricing';
+import { CreatePricingModal } from '@/components/pricing/create-pricing-modal';
+import { usePricingPlans, useArchivePricingPlan, useDeletePricingPlan } from '@/hooks/use-pricing';
 import { Plus, CreditCard, Package, TrendingUp, DollarSign } from 'lucide-react';
+import type { PricingPlan } from '@/types/pricing';
 
 export default function PricingPage() {
     const [activeTab, setActiveTab] = useState<string>('all');
+    const [createModalOpen, setCreateModalOpen] = useState(false);
     const { data: plans, isLoading } = usePricingPlans();
+    const archivePlan = useArchivePricingPlan();
+    const deletePlan = useDeletePricingPlan();
 
     // Filter plans by type
     const filteredPlans = plans?.filter((plan) => {
@@ -22,10 +27,20 @@ export default function PricingPage() {
 
     // Stats
     const activePlansCount = plans?.filter((p) => p.status === 'active').length || 0;
-    const totalSubscribers = plans?.reduce((acc, p) => acc + p.subscriberCount, 0) || 0;
+    const totalSubscribers = plans?.reduce((acc, p) => acc + (p.subscriberCount ?? 0), 0) || 0;
     const monthlyRevenue = plans
         ?.filter((p) => p.status === 'active' && p.billingCycle === 'monthly')
-        .reduce((acc, p) => acc + p.price * p.subscriberCount, 0) || 0;
+        .reduce((acc, p) => acc + p.price * (p.subscriberCount ?? 0), 0) || 0;
+
+    const handleArchive = (plan: PricingPlan) => {
+        archivePlan.mutate(plan.id);
+    };
+
+    const handleDelete = (plan: PricingPlan) => {
+        if (confirm(`Are you sure you want to delete "${plan.name}"?`)) {
+            deletePlan.mutate(plan.id);
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -37,7 +52,10 @@ export default function PricingPage() {
                         Manage membership plans and class packages.
                     </p>
                 </div>
-                <Button className="gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 shadow-lg shadow-violet-500/25 hover:from-violet-700 hover:to-indigo-700">
+                <Button
+                    onClick={() => setCreateModalOpen(true)}
+                    className="gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 shadow-lg shadow-violet-500/25 hover:from-violet-700 hover:to-indigo-700"
+                >
                     <Plus className="h-4 w-4" />
                     Create Plan
                 </Button>
@@ -126,8 +144,8 @@ export default function PricingPage() {
                             plan={plan}
                             featured={plan.name === 'Premium Membership'}
                             onEdit={(p) => console.log('Edit:', p)}
-                            onArchive={(p) => console.log('Archive:', p)}
-                            onDelete={(p) => console.log('Delete:', p)}
+                            onArchive={handleArchive}
+                            onDelete={handleDelete}
                         />
                     ))}
                 </div>
@@ -140,8 +158,21 @@ export default function PricingPage() {
                     <p className="mt-1 text-sm text-zinc-500">
                         Create your first pricing plan to get started.
                     </p>
+                    <Button
+                        onClick={() => setCreateModalOpen(true)}
+                        className="mt-4 bg-gradient-to-r from-violet-600 to-indigo-600"
+                    >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Create Plan
+                    </Button>
                 </div>
             )}
+
+            {/* Create Pricing Modal */}
+            <CreatePricingModal
+                open={createModalOpen}
+                onOpenChange={setCreateModalOpen}
+            />
         </div>
     );
 }

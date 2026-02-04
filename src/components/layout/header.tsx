@@ -14,6 +14,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/providers/auth-context';
 
 // Map paths to readable names
 const pathNameMap: Record<string, string> = {
@@ -60,6 +61,18 @@ function Breadcrumbs() {
 }
 
 export function Header() {
+    const { user, logout } = useAuth();
+
+    // Get initials from nickname or email
+    const initials = user?.nickname
+        ? user.nickname.substring(0, 2).toUpperCase()
+        : user?.email?.substring(0, 2).toUpperCase() || 'U';
+
+    const displayName = user?.nickname || user?.email?.split('@')[0] || 'User';
+    const displayRole = user?.role === 'gym_owner' ? 'Gym Owner' :
+        user?.role === 'gym_manager' ? 'Manager' :
+            user?.role === 'trainer' ? 'Trainer' : 'Staff';
+
     return (
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-zinc-200/60 bg-white/80 px-6 backdrop-blur-xl">
             {/* Left: Breadcrumbs */}
@@ -97,14 +110,14 @@ export function Header() {
                             className="flex items-center gap-2 rounded-xl px-2 py-1.5 hover:bg-zinc-100"
                         >
                             <Avatar className="h-8 w-8 ring-2 ring-zinc-200">
-                                <AvatarImage src="/avatars/owner.jpg" alt="John Doe" />
+                                {/* Removed invalid src to force fallback */}
                                 <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-500 text-xs font-medium text-white">
-                                    JD
+                                    {initials}
                                 </AvatarFallback>
                             </Avatar>
                             <div className="hidden flex-col items-start text-sm lg:flex">
-                                <span className="font-medium text-zinc-900">John Doe</span>
-                                <span className="text-xs text-zinc-500">Gym Owner</span>
+                                <span className="font-medium text-zinc-900">{displayName}</span>
+                                <span className="text-xs text-zinc-500 capitalize">{displayRole}</span>
                             </div>
                         </Button>
                     </DropdownMenuTrigger>
@@ -127,7 +140,10 @@ export function Header() {
                             </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-600 focus:text-red-600">
+                        <DropdownMenuItem
+                            className="text-red-600 focus:text-red-600 cursor-pointer"
+                            onClick={() => logout()}
+                        >
                             Log out
                         </DropdownMenuItem>
                     </DropdownMenuContent>
