@@ -28,3 +28,16 @@ export interface ApiUser {
     tenant_id?: string;
     tenant_subdomain?: string;
 }
+
+export interface TenantBranding {
+    primary_color?: string;
+    secondary_color?: string;
+    logo_url?: string;
+    font_family?: string;
+}
+
+export interface TenantDetails {
+    id: string;
+    name: string;
+    branding?: TenantBranding;
+}
