@@ -1,14 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Dumbbell, ArrowRight, Mail, Lock, AlertCircle } from "lucide-react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { useAuth } from "../../providers/auth-context";
-
-const MovingDumbbell = dynamic(() => import("../../components/landing/MovingDumbbell"), { ssr: false });
-const Clouds = dynamic(() => import("../../components/landing/Clouds"), { ssr: false });
 
 export default function LoginPage() {
     const { login } = useAuth();
@@ -25,120 +20,127 @@ export default function LoginPage() {
         try {
             await login(email, password);
             // Redirect is handled inside login()
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Login Error:", err);
-            setError(err.message || "Invalid email or password. Please try again.");
+            const message =
+                err instanceof Error
+                    ? err.message
+                    : "Invalid email or password. Please try again.";
+            setError(message);
             setIsLoading(false);
         }
     };
 
     return (
-        <main className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-b from-sky-200 via-blue-100 to-white">
-            {/* 3D Moving Dumbbell Background */}
-            <MovingDumbbell />
+        <main className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background px-6 py-12">
+            {/* Same ambient glows as landing hero */}
+            <div className="absolute top-1/4 right-0 w-[500px] h-[500px] bg-blue-500/20 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute bottom-1/4 left-0 w-[400px] h-[400px] bg-purple-500/20 rounded-full blur-[100px] pointer-events-none" />
 
-            {/* Animated Clouds - more visible on light bg */}
-            <Clouds />
-
-            {/* Very subtle gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-white/60 via-transparent to-sky-100/30 z-[1] pointer-events-none" />
-
-            {/* Soft glow effects - lighter colors */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-300/20 rounded-full blur-[100px] z-[2]" />
-            <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-purple-200/20 rounded-full blur-[80px] z-[2]" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-sky-200/10 rounded-full blur-[120px] z-[2]" />
-
-            <div className="w-full max-w-md px-6 relative z-10">
-                {/* Card with glass effect - adjusted for light theme */}
-                <div className="relative rounded-3xl p-8 md:p-10 shadow-2xl overflow-hidden border border-white/40">
-                    {/* Gradient background - lighter purple */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-violet-500/90 via-purple-600/90 to-fuchsia-600/90" />
-
-                    {/* Glass overlay */}
-                    <div className="absolute inset-0 backdrop-blur-2xl bg-white/5" />
-
-                    {/* Shine effects */}
-                    <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-
-                    {/* Subtle inner glow */}
-                    <div className="absolute -top-20 -right-20 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
-
-                    {/* Content */}
-                    <div className="relative z-10">
-                        <div className="flex flex-col items-center mb-10 text-center">
-                            <Link href="/" className="mb-6 group">
-                                <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center group-hover:bg-white/30 group-hover:scale-110 transition-all duration-300 border border-white/30 shadow-lg">
-                                    <Dumbbell className="w-8 h-8 text-white" />
-                                </div>
-                            </Link>
-                            <h1 className="text-3xl font-bold tracking-tight mb-2 text-white drop-shadow-md">
-                                Welcome Back
+            <div className="relative z-10 w-full max-w-md">
+                <div className="mb-10 text-center">
+                    <Link href="/" className="inline-flex flex-col items-center gap-4 group">
+                        <div className="w-14 h-14 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/10 group-hover:scale-105 transition-transform">
+                            <Dumbbell className="w-7 h-7" />
+                        </div>
+                        <div>
+                            <p className="text-xs font-semibold tracking-[0.22em] uppercase text-muted-foreground mb-2">
+                                Owner Portal
+                            </p>
+                            <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter leading-tight">
+                                Welcome to{" "}
+                                <span className="text-gradient">Gym Empire</span>
                             </h1>
-                            <p className="text-purple-100">Log in to manage your fitness empire</p>
+                        </div>
+                    </Link>
+                    <p className="mt-3 text-muted-foreground text-base">
+                        Sign in to manage your fitness business.
+                    </p>
+                </div>
+
+                <div className="rounded-3xl border border-border/60 bg-background/80 backdrop-blur-xl shadow-[0_20px_60px_-24px_rgba(0,0,0,0.12)] p-8 sm:p-10">
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        {error && (
+                            <div className="bg-red-50 border border-red-200 text-red-700 p-3.5 rounded-2xl flex items-start gap-2.5 text-sm">
+                                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                                <span>{error}</span>
+                            </div>
+                        )}
+
+                        <div className="space-y-2">
+                            <label
+                                className="text-sm font-medium text-foreground"
+                                htmlFor="email"
+                            >
+                                Email Address
+                            </label>
+                            <div className="relative group">
+                                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-foreground transition-colors" />
+                                <input
+                                    id="email"
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="name@gym.com"
+                                    autoComplete="email"
+                                    className="flex h-12 w-full rounded-full border border-border bg-background pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-primary/30 focus:ring-4 focus:ring-blue-500/10"
+                                    required
+                                />
+                            </div>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            {error && (
-                                <div className="bg-red-500/20 border border-red-500/50 text-white p-3 rounded-xl flex items-center gap-2 text-sm backdrop-blur-md animate-in fade-in slide-in-from-top-2">
-                                    <AlertCircle className="w-4 h-4 shrink-0" />
-                                    <span>{error}</span>
-                                </div>
-                            )}
-
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium leading-none text-white/90" htmlFor="email">
-                                    Email Address
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <label
+                                    className="text-sm font-medium text-foreground"
+                                    htmlFor="password"
+                                >
+                                    Password
                                 </label>
-                                <div className="relative group">
-                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-200 group-focus-within:text-white transition-colors" />
-                                    <input
-                                        id="email"
-                                        type="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="name@gym.com"
-                                        className="flex h-12 w-full rounded-xl border border-white/20 bg-black/20 pl-10 pr-3 py-2 text-sm text-white placeholder:text-purple-200/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:border-white/30 transition-all backdrop-blur-md hover:bg-black/30"
-                                        required
-                                    />
-                                </div>
+                                <a
+                                    href="#"
+                                    className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                                >
+                                    Forgot password?
+                                </a>
                             </div>
-
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <label className="text-sm font-medium leading-none text-white/90" htmlFor="password">
-                                        Password
-                                    </label>
-                                    <a href="#" className="text-xs text-pink-200 hover:text-white hover:underline transition-colors">Forgot password?</a>
-                                </div>
-                                <div className="relative group">
-                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-200 group-focus-within:text-white transition-colors" />
-                                    <input
-                                        id="password"
-                                        type="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        placeholder="••••••••"
-                                        className="flex h-12 w-full rounded-xl border border-white/20 bg-black/20 pl-10 pr-3 py-2 text-sm text-white placeholder:text-purple-200/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:border-white/30 transition-all backdrop-blur-md hover:bg-black/30"
-                                        required
-                                    />
-                                </div>
+                            <div className="relative group">
+                                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-foreground transition-colors" />
+                                <input
+                                    id="password"
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="Enter your password"
+                                    autoComplete="current-password"
+                                    className="flex h-12 w-full rounded-full border border-border bg-background pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-primary/30 focus:ring-4 focus:ring-purple-500/10"
+                                    required
+                                />
                             </div>
+                        </div>
 
-                            <button
-                                type="submit"
-                                disabled={isLoading}
-                                className="w-full flex items-center justify-center gap-2 h-12 px-4 py-2 bg-white text-purple-700 rounded-xl font-bold hover:shadow-lg hover:shadow-purple-500/30 hover:scale-[1.02] transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {isLoading ? (
-                                    <div className="w-5 h-5 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin" />
-                                ) : (
-                                    <>Sign In <ArrowRight className="w-4 h-4" /></>
-                                )}
-                            </button>
-                        </form>
-                    </div>
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="w-full flex items-center justify-center gap-2 h-12 mt-2 rounded-full bg-primary text-primary-foreground font-bold text-base hover:scale-[1.02] transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                        >
+                            {isLoading ? (
+                                <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                            ) : (
+                                <>
+                                    Sign In
+                                    <ArrowRight className="w-4 h-4" />
+                                </>
+                            )}
+                        </button>
+                    </form>
                 </div>
+
+                <p className="mt-8 text-center text-sm text-muted-foreground">
+                    <Link href="/" className="hover:text-foreground transition-colors">
+                        ← Back to home
+                    </Link>
+                </p>
             </div>
         </main>
     );

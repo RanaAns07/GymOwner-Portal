@@ -6,11 +6,18 @@ import {
     useState,
     useEffect,
     useCallback,
-    type ReactNode
+    type ReactNode,
 } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiClient } from '@/lib/api';
-import type { ApiLoginRequest, ApiLoginResponse, ApiUser, TenantBranding, TenantDetails } from '@/types/api-types';
+import { loginApi, AuthApiError } from '@/lib/api/auth-api';
+import {
+    setTokens,
+    clearAuthStorage,
+    AUTH_STORAGE_KEYS,
+} from '@/lib/auth';
+import type { ApiUser, TenantBranding, TenantDetails } from '@/types/api-types';
+
+const OWNER_PORTAL_ROLES = new Set(['gym_owner', 'gym_manager', 'platform_admin']);
 
 interface AuthContextType {
     user: ApiUser | null;
@@ -31,11 +38,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
-    // Initialize auth state from localStorage
+    // Restore session from localStorage
     useEffect(() => {
-        const storedToken = localStorage.getItem('auth_token');
-        const storedUser = localStorage.getItem('auth_user');
-        const storedBranding = localStorage.getItem('auth_branding');
+        const storedToken = localStorage.getItem(AUTH_STORAGE_KEYS.ACCESS_KEY);
+        const storedUser = localStorage.getItem(AUTH_STORAGE_KEYS.USER_KEY);
+        const storedBranding = localStorage.getItem(AUTH_STORAGE_KEYS.BRANDING_KEY);
 
         if (storedToken && storedUser) {
             try {
@@ -45,74 +52,65 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     setBranding(JSON.parse(storedBranding));
                 }
             } catch {
-                // Invalid stored data, clear it
-                localStorage.removeItem('auth_token');
-                localStorage.removeItem('auth_user');
-                localStorage.removeItem('auth_branding');
+                clearAuthStorage();
             }
         }
         setIsLoading(false);
     }, []);
 
-    const login = useCallback(async (email: string, password: string) => {
-        // 1. Login to get token and user info
-        const response = await fetch('/api/proxy/v1/users/auth/login/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password } as ApiLoginRequest),
-        });
+    const login = useCallback(
+        async (email: string, password: string) => {
+            // POST /api/v1/users/auth/login/  { email, password }
+            const data = await loginApi({ email: email.trim(), password });
 
-        if (!response.ok) {
-            const error = await response.json().catch(() => ({}));
-            throw new Error(error.message || error.detail || 'Login failed');
-        }
-
-        const data: ApiLoginResponse = await response.json();
-
-        // Store basic auth data
-        localStorage.setItem('auth_token', data.access);
-        localStorage.setItem('auth_user', JSON.stringify(data.user));
-
-        if (data.refresh) {
-            localStorage.setItem('auth_refresh_token', data.refresh);
-        }
-
-        setToken(data.access);
-        setUser(data.user);
-
-        // 2. If user has a tenant_id, fetch branding details
-        if (data.user.tenant_id) {
-            try {
-                const tenantResponse = await fetch(`/api/proxy/v1/platform/tenants/${data.user.tenant_id}/`, {
-                    headers: {
-                        'Authorization': `Bearer ${data.access}`
-                    }
-                });
-
-                if (tenantResponse.ok) {
-                    const tenantData: TenantDetails = await tenantResponse.json();
-                    if (tenantData.branding) {
-                        setBranding(tenantData.branding);
-                        localStorage.setItem('auth_branding', JSON.stringify(tenantData.branding));
-                    }
-                } else {
-                    console.error("Failed to fetch tenant details for branding");
-                }
-            } catch (err) {
-                console.error("Error fetching tenant branding:", err);
+            if (!OWNER_PORTAL_ROLES.has(data.user.role)) {
+                throw new AuthApiError(
+                    'This account does not have access to the owner portal.',
+                    403
+                );
             }
-        }
 
-        router.push('/dashboard');
-    }, [router]);
+            setTokens(data.access, data.refresh);
+            localStorage.setItem(AUTH_STORAGE_KEYS.USER_KEY, JSON.stringify(data.user));
+
+            setToken(data.access);
+            setUser(data.user);
+
+            // Optional: load tenant branding when tenant_id is present
+            if (data.user.tenant_id) {
+                try {
+                    const tenantResponse = await fetch(
+                        `/api/proxy/v1/platform/tenants/${data.user.tenant_id}/`,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${data.access}`,
+                                Accept: 'application/json',
+                            },
+                        }
+                    );
+
+                    if (tenantResponse.ok) {
+                        const tenantData: TenantDetails = await tenantResponse.json();
+                        if (tenantData.branding) {
+                            setBranding(tenantData.branding);
+                            localStorage.setItem(
+                                AUTH_STORAGE_KEYS.BRANDING_KEY,
+                                JSON.stringify(tenantData.branding)
+                            );
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error fetching tenant branding:', err);
+                }
+            }
+
+            router.push('/dashboard');
+        },
+        [router]
+    );
 
     const logout = useCallback(() => {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('auth_user');
-        localStorage.removeItem('auth_refresh_token');
-        localStorage.removeItem('auth_branding');
+        clearAuthStorage();
         setToken(null);
         setUser(null);
         setBranding(null);

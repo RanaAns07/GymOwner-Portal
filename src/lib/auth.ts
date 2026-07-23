@@ -1,33 +1,41 @@
 "use client";
 
-const API_BASE_URL = "/api/proxy/v1";
+import { refreshTokenApi } from '@/lib/api/auth-api';
 
-export const setTokens = (access: string, refresh: string) => {
-    if (typeof window !== "undefined") {
-        localStorage.setItem("access_token", access);
-        localStorage.setItem("refresh_token", refresh);
+const ACCESS_KEY = 'auth_token';
+const REFRESH_KEY = 'auth_refresh_token';
+const USER_KEY = 'auth_user';
+const BRANDING_KEY = 'auth_branding';
+
+export const setTokens = (access: string, refresh?: string) => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(ACCESS_KEY, access);
+    if (refresh) {
+        localStorage.setItem(REFRESH_KEY, refresh);
     }
 };
 
 export const getAccessToken = () => {
-    if (typeof window !== "undefined") {
-        return localStorage.getItem("access_token");
-    }
-    return null;
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem(ACCESS_KEY);
 };
 
 export const getRefreshToken = () => {
-    if (typeof window !== "undefined") {
-        return localStorage.getItem("refresh_token");
-    }
-    return null;
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem(REFRESH_KEY);
 };
 
 export const clearTokens = () => {
-    if (typeof window !== "undefined") {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
-    }
+    if (typeof window === 'undefined') return;
+    localStorage.removeItem(ACCESS_KEY);
+    localStorage.removeItem(REFRESH_KEY);
+};
+
+export const clearAuthStorage = () => {
+    if (typeof window === 'undefined') return;
+    clearTokens();
+    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(BRANDING_KEY);
 };
 
 export const refreshAccessToken = async () => {
@@ -35,25 +43,19 @@ export const refreshAccessToken = async () => {
     if (!refresh) return null;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/users/auth/refresh/`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ refresh }),
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            setTokens(data.access, refresh); // Refresh API usually only returns new access token
-            return data.access;
-        } else {
-            clearTokens();
-            return null;
-        }
+        const access = await refreshTokenApi(refresh);
+        setTokens(access, refresh);
+        return access;
     } catch (error) {
-        console.error("Token refresh failed:", error);
-        clearTokens();
+        console.error('Token refresh failed:', error);
+        clearAuthStorage();
         return null;
     }
 };
+
+export const AUTH_STORAGE_KEYS = {
+    ACCESS_KEY,
+    REFRESH_KEY,
+    USER_KEY,
+    BRANDING_KEY,
+} as const;

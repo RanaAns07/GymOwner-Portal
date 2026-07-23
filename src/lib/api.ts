@@ -57,6 +57,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
                 localStorage.removeItem('auth_token');
                 localStorage.removeItem('auth_user');
                 localStorage.removeItem('auth_refresh_token');
+                localStorage.removeItem('auth_branding');
                 // Avoid infinite redirect loops if already on login
                 if (!window.location.pathname.includes('/login')) {
                     window.location.href = '/login?reason=session_expired';
