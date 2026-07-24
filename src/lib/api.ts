@@ -42,8 +42,44 @@ async function handleResponse<T>(response: Response): Promise<T> {
         if (contentType?.includes('application/json')) {
             try {
                 const json = await response.json();
+                const detail =
+                    typeof json.detail === 'string'
+                        ? json.detail
+                        : Array.isArray(json.detail)
+                          ? json.detail.map((d: unknown) =>
+                                typeof d === 'string' ? d : JSON.stringify(d)
+                            ).join(', ')
+                          : undefined;
+
+                // Nested field errors e.g. { profile: { profile_image: ["..."] } }
+                let nestedMessage: string | undefined;
+                if (json.profile && typeof json.profile === 'object') {
+                    for (const msgs of Object.values(json.profile)) {
+                        if (Array.isArray(msgs) && typeof msgs[0] === 'string') {
+                            nestedMessage = msgs[0];
+                            break;
+                        }
+                    }
+                }
+                if (!nestedMessage && json && typeof json === 'object') {
+                    for (const value of Object.values(json)) {
+                        if (Array.isArray(value) && typeof value[0] === 'string') {
+                            nestedMessage = value[0];
+                            break;
+                        }
+                    }
+                }
+
                 errorData = {
-                    message: json.message || json.error || 'An error occurred',
+                    message:
+                        detail ||
+                        nestedMessage ||
+                        json.message ||
+                        json.error ||
+                        (Array.isArray(json.non_field_errors)
+                            ? String(json.non_field_errors[0])
+                            : undefined) ||
+                        'An error occurred',
                     status: response.status,
                     errors: json.errors,
                 };
@@ -68,11 +104,25 @@ async function handleResponse<T>(response: Response): Promise<T> {
         throw new ApiClientError(errorData.message, errorData.status, errorData.errors);
     }
 
-    if (contentType?.includes('application/json')) {
-        return response.json();
+    // 204/205 have no body — parsing as JSON would throw and break deletes
+    if (response.status === 204 || response.status === 205) {
+        return undefined as T;
     }
 
-    return response.text() as unknown as T;
+    const raw = await response.text();
+    if (!raw) {
+        return undefined as T;
+    }
+
+    if (contentType?.includes('application/json')) {
+        try {
+            return JSON.parse(raw) as T;
+        } catch {
+            return undefined as T;
+        }
+    }
+
+    return raw as unknown as T;
 }
 
 function getAuthToken(): string | null {
@@ -80,10 +130,10 @@ function getAuthToken(): string | null {
     return localStorage.getItem('auth_token');
 }
 
-function buildHeaders(customHeaders?: HeadersInit): Headers {
+function buildHeaders(customHeaders?: HeadersInit, skipJsonContentType = false): Headers {
     const headers = new Headers(customHeaders);
 
-    if (!headers.has('Content-Type')) {
+    if (!skipJsonContentType && !headers.has('Content-Type')) {
         headers.set('Content-Type', 'application/json');
     }
 
@@ -155,6 +205,18 @@ export const apiClient = {
             headers: buildHeaders(options?.headers),
             body: body ? JSON.stringify(body) : undefined,
             ...options,
+        });
+        return handleResponse<T>(response);
+    },
+
+    /**
+     * PATCH multipart/form-data (do not set Content-Type — browser sets boundary)
+     */
+    async patchFormData<T>(endpoint: string, formData: FormData): Promise<T> {
+        const response = await fetch(`${API_BASE}${endpoint}`, {
+            method: 'PATCH',
+            headers: buildHeaders(undefined, true),
+            body: formData,
         });
         return handleResponse<T>(response);
     },

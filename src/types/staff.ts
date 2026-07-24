@@ -6,6 +6,7 @@ export interface StaffMember {
     lastName: string;
     email: string;
     phone?: string;
+    gender?: string;
     role: StaffRole;
     status: StaffStatus;
     avatar?: string;
@@ -39,6 +40,7 @@ export interface CreateStaffInput {
     lastName: string;
     email: string;
     phone?: string;
+    gender?: string;
     role: StaffRole;
     specializations?: string[];
     permissions?: StaffPermission[];
@@ -48,13 +50,15 @@ export interface CreateStaffInput {
 
 export interface UpdateStaffInput extends Partial<CreateStaffInput> {
     status?: StaffStatus;
+    /** Profile photo file for multipart PATCH */
+    imageFile?: File | null;
 }
 
 // Role display labels
 export const roleLabels: Record<StaffRole, string> = {
-    trainer: 'Personal Trainer',
+    trainer: 'Trainer',
     receptionist: 'Receptionist',
-    manager: 'Manager',
+    manager: 'Gym Manager',
     nutritionist: 'Nutritionist',
     physiotherapist: 'Physiotherapist',
     owner: 'Gym Owner',

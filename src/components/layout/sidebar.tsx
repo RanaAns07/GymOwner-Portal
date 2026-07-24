@@ -19,7 +19,8 @@ import {
     Dumbbell,
     LayoutDashboard,
     Settings,
-    HelpCircle,
+    // HelpCircle,
+    MapPin,
 } from 'lucide-react';
 
 interface NavItem {
@@ -39,6 +40,11 @@ const mainNavItems: NavItem[] = [
         title: 'Staff',
         href: '/dashboard/staff',
         icon: Users,
+    },
+    {
+        title: 'Locations',
+        href: '/dashboard/locations',
+        icon: MapPin,
     },
     {
         title: 'Pricing',
@@ -63,11 +69,11 @@ const secondaryNavItems: NavItem[] = [
         href: '/dashboard/settings',
         icon: Settings,
     },
-    {
-        title: 'Help & Support',
-        href: '/dashboard/help',
-        icon: HelpCircle,
-    },
+    // {
+    //     title: 'Help & Support',
+    //     href: '/dashboard/help',
+    //     icon: HelpCircle,
+    // },
 ];
 
 interface SidebarProps {

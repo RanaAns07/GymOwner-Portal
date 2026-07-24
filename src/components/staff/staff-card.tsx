@@ -1,6 +1,7 @@
 'use client';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ProfileAvatar } from '@/components/ui/profile-avatar';
+import { resolveStaffAvatar } from '@/lib/staff-avatar-cache';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,7 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import type { StaffMember } from '@/types/staff';
 import { roleLabels, statusConfig } from '@/types/staff';
-import { Mail, MoreVertical, Phone, Calendar, Edit, Trash2, Eye } from 'lucide-react';
+import { Mail, MoreVertical, Phone, Calendar, Edit, Trash2, Eye, User } from 'lucide-react';
 
 interface StaffCardProps {
     staff: StaffMember;
@@ -25,16 +26,18 @@ interface StaffCardProps {
 }
 
 export function StaffCard({ staff, onEdit, onDelete, onView }: StaffCardProps) {
-    const initials = `${staff.firstName[0]}${staff.lastName[0]}`;
+    const initials = (
+        `${staff.firstName?.[0] || ''}${staff.lastName?.[0] || ''}` ||
+        staff.email?.[0] ||
+        '?'
+    ).toUpperCase();
     const status = statusConfig[staff.status];
+    const avatarSrc = resolveStaffAvatar(staff.id, staff.avatar);
 
-    // Generate a gradient based on role
     const avatarGradients: Record<string, string> = {
         trainer: 'from-violet-500 to-purple-500',
-        nutritionist: 'from-emerald-500 to-teal-500',
-        physiotherapist: 'from-blue-500 to-cyan-500',
-        receptionist: 'from-amber-500 to-orange-500',
         manager: 'from-rose-500 to-pink-500',
+        owner: 'from-indigo-500 to-blue-500',
     };
 
     return (
@@ -46,21 +49,28 @@ export function StaffCard({ staff, onEdit, onDelete, onView }: StaffCardProps) {
                 <div className="flex items-start justify-between">
                     {/* Avatar & Info */}
                     <div className="flex gap-4">
-                        <Avatar className="h-14 w-14 ring-2 ring-zinc-100 transition-transform duration-300 group-hover:scale-105">
-                            <AvatarImage src={staff.avatar} alt={`${staff.firstName} ${staff.lastName}`} />
-                            <AvatarFallback className={cn(
-                                "bg-gradient-to-br text-white font-medium",
+                        <ProfileAvatar
+                            className="h-14 w-14 ring-2 ring-zinc-100 transition-transform duration-300 group-hover:scale-105"
+                            src={avatarSrc}
+                            alt={`${staff.firstName} ${staff.lastName}`}
+                            fallback={initials}
+                            fallbackClassName={cn(
+                                'bg-gradient-to-br text-white font-medium',
                                 avatarGradients[staff.role] || avatarGradients.trainer
-                            )}>
-                                {initials}
-                            </AvatarFallback>
-                        </Avatar>
+                            )}
+                        />
 
                         <div className="space-y-1">
                             <h3 className="font-semibold text-zinc-900">
                                 {staff.firstName} {staff.lastName}
                             </h3>
-                            <p className="text-sm text-zinc-500">{roleLabels[staff.role]}</p>
+                            <p className="text-sm text-zinc-500">
+                                {staff.role === 'trainer'
+                                    ? 'Trainer'
+                                    : staff.role === 'manager'
+                                      ? 'Gym Manager'
+                                      : roleLabels[staff.role]}
+                            </p>
                             <div className="flex items-center gap-2 pt-1">
                                 <Badge variant="secondary" className={cn("text-xs font-medium", status.color)}>
                                     {status.label}
@@ -113,6 +123,12 @@ export function StaffCard({ staff, onEdit, onDelete, onView }: StaffCardProps) {
                             <span>{staff.phone}</span>
                         </div>
                     )}
+                    {staff.gender ? (
+                        <div className="flex items-center gap-2 capitalize">
+                            <User className="h-4 w-4 text-zinc-400" />
+                            <span>{staff.gender.replace(/_/g, ' ')}</span>
+                        </div>
+                    ) : null}
                     <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-zinc-400" />
                         <span>Joined {new Date(staff.hireDate).toLocaleDateString('en-US', {
@@ -122,26 +138,27 @@ export function StaffCard({ staff, onEdit, onDelete, onView }: StaffCardProps) {
                     </div>
                 </div>
 
-                {/* Specializations */}
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                    {staff.specializations.slice(0, 3).map((spec) => (
-                        <Badge
-                            key={spec}
-                            variant="outline"
-                            className="border-zinc-200 bg-zinc-50 text-xs font-normal text-zinc-600"
-                        >
-                            {spec}
-                        </Badge>
-                    ))}
-                    {staff.specializations.length > 3 && (
-                        <Badge
-                            variant="outline"
-                            className="border-zinc-200 bg-zinc-50 text-xs font-normal text-zinc-500"
-                        >
-                            +{staff.specializations.length - 3} more
-                        </Badge>
-                    )}
-                </div>
+                {staff.specializations.length > 0 && (
+                    <div className="mt-4 flex flex-wrap gap-1.5">
+                        {staff.specializations.slice(0, 3).map((spec) => (
+                            <Badge
+                                key={spec}
+                                variant="outline"
+                                className="border-zinc-200 bg-zinc-50 text-xs font-normal text-zinc-600"
+                            >
+                                {spec}
+                            </Badge>
+                        ))}
+                        {staff.specializations.length > 3 && (
+                            <Badge
+                                variant="outline"
+                                className="border-zinc-200 bg-zinc-50 text-xs font-normal text-zinc-500"
+                            >
+                                +{staff.specializations.length - 3} more
+                            </Badge>
+                        )}
+                    </div>
+                )}
             </CardContent>
         </Card>
     );

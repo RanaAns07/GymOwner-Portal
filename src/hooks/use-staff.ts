@@ -75,8 +75,19 @@ export function useUpdateStaffMember() {
             updateStaffMemberApi(id, data),
         onSuccess: (updatedStaff) => {
             if (updatedStaff) {
-                queryClient.invalidateQueries({ queryKey: staffKeys.lists() });
                 queryClient.setQueryData(staffKeys.detail(updatedStaff.id), updatedStaff);
+                queryClient.setQueriesData<StaffMember[]>(
+                    { queryKey: staffKeys.lists() },
+                    (old) => {
+                        if (!old) return old;
+                        return old.map((member) =>
+                            member.id === updatedStaff.id
+                                ? { ...member, ...updatedStaff }
+                                : member
+                        );
+                    }
+                );
+                queryClient.invalidateQueries({ queryKey: staffKeys.lists() });
                 toast.success('Staff member updated successfully!');
             }
         },
@@ -97,7 +108,7 @@ export function useDeleteStaffMember() {
         onSuccess: (_, id) => {
             queryClient.invalidateQueries({ queryKey: staffKeys.lists() });
             queryClient.removeQueries({ queryKey: staffKeys.detail(id) });
-            toast.success('Staff member removed successfully.');
+            toast.success('Staff member removed.');
         },
         onError: (error) => {
             const message = error instanceof Error ? error.message : 'Failed to remove staff member';

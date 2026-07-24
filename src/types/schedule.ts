@@ -30,7 +30,9 @@ export interface CreateSessionInput {
     startTime: string;
     endTime: string;
     capacity: number;
-    location: string;
+    /** Location UUID from /scheduling/locations/ */
+    locationId: string;
+    locationName?: string;
 }
 
 // Display labels

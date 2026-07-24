@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { useRouter } from 'next/navigation';
 import { loginApi, AuthApiError } from '@/lib/api/auth-api';
+import { fetchMyProfileApi } from '@/lib/api/profile-api';
 import {
     setTokens,
     clearAuthStorage,
@@ -26,10 +27,53 @@ interface AuthContextType {
     isLoading: boolean;
     login: (email: string, password: string) => Promise<void>;
     logout: () => void;
+    updateUser: (user: ApiUser) => void;
     token: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+/** Merge GET /users/profiles/me/ into the auth user (nickname + profile image, etc.). */
+function mergeProfileIntoUser(
+    base: ApiUser,
+    me: Awaited<ReturnType<typeof fetchMyProfileApi>>
+): ApiUser {
+    const nickname = me.profile?.nickname || me.nickname || base.nickname;
+    const remoteImage = me.profile?.profile_image ?? null;
+    const localImage = base.profile?.profile_image ?? null;
+    // Keep a working data:/blob: preview — remote media URLs often 404 (nginx not serving files)
+    const profileImage =
+        localImage && (localImage.startsWith('data:') || localImage.startsWith('blob:'))
+            ? localImage
+            : remoteImage || localImage;
+
+    return {
+        ...base,
+        id: me.id || base.id,
+        email: me.email || base.email,
+        role: (me.role as ApiUser['role']) || base.role,
+        nickname,
+        tenant_id: me.tenant_id || base.tenant_id,
+        tenant_name: me.tenant_name || base.tenant_name,
+        tenant_subdomain: me.tenant_subdomain || base.tenant_subdomain,
+        profile: {
+            ...base.profile,
+            ...me.profile,
+            nickname: me.profile?.nickname || nickname,
+            profile_image: profileImage,
+        },
+    };
+}
+
+async function loadProfileForUser(base: ApiUser): Promise<ApiUser> {
+    try {
+        const me = await fetchMyProfileApi();
+        return mergeProfileIntoUser(base, me);
+    } catch (err) {
+        console.warn('Profile load failed:', err);
+        return base;
+    }
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<ApiUser | null>(null);
@@ -38,25 +82,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
-    // Restore session from localStorage
-    useEffect(() => {
-        const storedToken = localStorage.getItem(AUTH_STORAGE_KEYS.ACCESS_KEY);
-        const storedUser = localStorage.getItem(AUTH_STORAGE_KEYS.USER_KEY);
-        const storedBranding = localStorage.getItem(AUTH_STORAGE_KEYS.BRANDING_KEY);
-
-        if (storedToken && storedUser) {
-            try {
-                setToken(storedToken);
-                setUser(JSON.parse(storedUser));
-                if (storedBranding) {
-                    setBranding(JSON.parse(storedBranding));
-                }
-            } catch {
-                clearAuthStorage();
-            }
-        }
-        setIsLoading(false);
+    const persistUser = useCallback((next: ApiUser) => {
+        setUser(next);
+        localStorage.setItem(AUTH_STORAGE_KEYS.USER_KEY, JSON.stringify(next));
     }, []);
+
+    // Restore session from localStorage, then refresh from GET /profiles/me/
+    useEffect(() => {
+        let cancelled = false;
+
+        const restore = async () => {
+            const storedToken = localStorage.getItem(AUTH_STORAGE_KEYS.ACCESS_KEY);
+            const storedUser = localStorage.getItem(AUTH_STORAGE_KEYS.USER_KEY);
+            const storedBranding = localStorage.getItem(AUTH_STORAGE_KEYS.BRANDING_KEY);
+
+            if (storedToken && storedUser) {
+                try {
+                    const parsed = JSON.parse(storedUser) as ApiUser;
+                    setToken(storedToken);
+                    setUser(parsed);
+                    if (storedBranding) {
+                        setBranding(JSON.parse(storedBranding));
+                    }
+
+                    const refreshed = await loadProfileForUser(parsed);
+                    if (!cancelled) {
+                        persistUser(refreshed);
+                    }
+                } catch {
+                    clearAuthStorage();
+                }
+            }
+            if (!cancelled) setIsLoading(false);
+        };
+
+        restore();
+        return () => {
+            cancelled = true;
+        };
+    }, [persistUser]);
 
     const login = useCallback(
         async (email: string, password: string) => {
@@ -71,16 +135,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
 
             setTokens(data.access, data.refresh);
-            localStorage.setItem(AUTH_STORAGE_KEYS.USER_KEY, JSON.stringify(data.user));
-
             setToken(data.access);
-            setUser(data.user);
+            persistUser(data.user);
+
+            // GET /users/profiles/me/ — load full profile (image, nickname, etc.)
+            const withProfile = await loadProfileForUser(data.user);
+            persistUser(withProfile);
 
             // Optional: load tenant branding when tenant_id is present
-            if (data.user.tenant_id) {
+            const tenantId = withProfile.tenant_id || data.user.tenant_id;
+            if (tenantId) {
                 try {
                     const tenantResponse = await fetch(
-                        `/api/proxy/v1/platform/tenants/${data.user.tenant_id}/`,
+                        `/api/proxy/v1/platform/tenants/${tenantId}/`,
                         {
                             headers: {
                                 Authorization: `Bearer ${data.access}`,
@@ -100,13 +167,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         }
                     }
                 } catch (err) {
-                    console.error('Error fetching tenant branding:', err);
+                    console.warn('Tenant branding unavailable:', err);
                 }
             }
 
             router.push('/dashboard');
         },
-        [router]
+        [router, persistUser]
     );
 
     const logout = useCallback(() => {
@@ -117,6 +184,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         router.push('/login');
     }, [router]);
 
+    const updateUser = useCallback(
+        (next: ApiUser) => {
+            persistUser(next);
+        },
+        [persistUser]
+    );
+
     return (
         <AuthContext.Provider
             value={{
@@ -126,6 +200,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 isLoading,
                 login,
                 logout,
+                updateUser,
                 token,
             }}
         >

@@ -81,19 +81,23 @@ export function EditSessionModal({
         },
     });
 
-    // Populate form when session changes
+    // Populate form when session changes (wall-clock from ISO string — no UTC shift)
     useEffect(() => {
         if (session) {
-            const start = new Date(session.startTime);
-            const end = new Date(session.endTime);
+            const startMatch = session.startTime.match(
+                /^(\d{4}-\d{2}-\d{2})[T\s](\d{2}:\d{2})/
+            );
+            const endMatch = session.endTime.match(
+                /^(\d{4}-\d{2}-\d{2})[T\s](\d{2}:\d{2})/
+            );
 
             reset({
                 title: session.title,
                 type: session.type,
                 trainerId: session.trainerId,
-                date: start.toISOString().split('T')[0],
-                startTime: start.toTimeString().slice(0, 5),
-                endTime: end.toTimeString().slice(0, 5),
+                date: startMatch?.[1] || session.startTime.slice(0, 10),
+                startTime: startMatch?.[2] || '09:00',
+                endTime: endMatch?.[2] || '10:00',
                 capacity: session.capacity.toString(),
                 location: session.location,
                 roomUrl: '',
@@ -106,16 +110,17 @@ export function EditSessionModal({
     const onSubmit = async (data: SessionFormData) => {
         if (!session) return;
 
-        const startDateTime = new Date(`${data.date}T${data.startTime}:00`);
-        const endDateTime = new Date(`${data.date}T${data.endTime}:00`);
+        // Keep wall-clock local times (no toISOString UTC shift)
+        const startTime = `${data.date}T${data.startTime}:00`;
+        const endTime = `${data.date}T${data.endTime}:00`;
 
         try {
             await updateSession.mutateAsync({
                 id: session.id,
                 data: {
                     title: data.title,
-                    startTime: startDateTime.toISOString(),
-                    endTime: endDateTime.toISOString(),
+                    startTime,
+                    endTime,
                     capacity: parseInt(data.capacity),
                     trainerId: data.trainerId,
                     location: data.location,

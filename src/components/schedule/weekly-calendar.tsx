@@ -9,6 +9,7 @@ import { sessionTypeColors } from '@/types/schedule';
 import { Users, MapPin } from 'lucide-react';
 
 interface WeeklyCalendarProps {
+    weekStart: Date;
     sessions: Session[];
     isLoading?: boolean;
     onSlotClick?: (day: Date, hour: number) => void;
@@ -18,11 +19,12 @@ interface WeeklyCalendarProps {
 const HOURS = Array.from({ length: 15 }, (_, i) => i + 6); // 6 AM to 8 PM
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-function getWeekDates(): Date[] {
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+/** Monday–Sunday dates for the week containing `reference`. */
+function getWeekDates(reference: Date): Date[] {
+    const dayOfWeek = reference.getDay();
+    const monday = new Date(reference);
+    monday.setHours(0, 0, 0, 0);
+    monday.setDate(reference.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
 
     return Array.from({ length: 7 }, (_, i) => {
         const date = new Date(monday);
@@ -113,20 +115,28 @@ function SessionSlot({
 }
 
 export function WeeklyCalendar({
+    weekStart,
     sessions,
     isLoading,
     onSlotClick,
     onSessionClick
 }: WeeklyCalendarProps) {
-    const weekDates = useMemo(() => getWeekDates(), []);
+    const weekDates = useMemo(() => getWeekDates(weekStart), [weekStart]);
     const today = new Date();
 
-    // Group sessions by day
+    // Group sessions by day (wall-clock date from ISO string — avoid TZ day shift)
     const sessionsByDay = useMemo(() => {
         const grouped: Record<string, Session[]> = {};
 
         sessions.forEach((session) => {
-            const date = new Date(session.startTime);
+            const match = session.startTime.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            const date = match
+                ? new Date(
+                      Number(match[1]),
+                      Number(match[2]) - 1,
+                      Number(match[3])
+                  )
+                : new Date(session.startTime);
             const dateKey = date.toDateString();
             if (!grouped[dateKey]) {
                 grouped[dateKey] = [];

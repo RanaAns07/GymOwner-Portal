@@ -14,7 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import type { PricingPlan } from '@/types/pricing';
 import { planTypeLabels, billingCycleLabels, planStatusConfig } from '@/types/pricing';
-import { Check, MoreVertical, Edit, Archive, Trash2, Users, Sparkles } from 'lucide-react';
+import { Check, MoreVertical, Edit, Archive, Trash2, Users, Sparkles, MapPin } from 'lucide-react';
 
 interface PricingCardProps {
     plan: PricingPlan;
@@ -55,6 +55,12 @@ export function PricingCard({ plan, onEdit, onArchive, onDelete, featured }: Pri
                             </Badge>
                         </div>
                         <h3 className="text-xl font-bold text-zinc-900">{plan.name}</h3>
+                        {plan.locationName && (
+                            <p className="mt-1 flex items-center gap-1 text-xs text-zinc-500">
+                                <MapPin className="h-3 w-3 shrink-0" />
+                                <span className="truncate">{plan.locationName}</span>
+                            </p>
+                        )}
                         <p className="mt-1 text-sm text-zinc-500">{plan.description}</p>
                     </div>
 
@@ -70,12 +76,17 @@ export function PricingCard({ plan, onEdit, onArchive, onDelete, featured }: Pri
                                 <Edit className="mr-2 h-4 w-4" />
                                 Edit Plan
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => onArchive?.(plan)}>
-                                <Archive className="mr-2 h-4 w-4" />
-                                {plan.status === 'archived' ? 'Restore' : 'Archive'}
-                            </DropdownMenuItem>
+                            {onArchive && (
+                                <DropdownMenuItem onClick={() => onArchive(plan)}>
+                                    <Archive className="mr-2 h-4 w-4" />
+                                    {plan.status === 'archived' ? 'Restore' : 'Archive'}
+                                </DropdownMenuItem>
+                            )}
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600" onClick={() => onDelete?.(plan)}>
+                            <DropdownMenuItem
+                                className="text-red-600"
+                                onClick={() => onDelete?.(plan)}
+                            >
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 Delete
                             </DropdownMenuItem>
@@ -87,17 +98,17 @@ export function PricingCard({ plan, onEdit, onArchive, onDelete, featured }: Pri
                 <div className="mt-4">
                     <div className="flex items-baseline gap-1">
                         <span className="text-4xl font-bold tracking-tight text-zinc-900">
-                            ${plan.price.toFixed(2)}
+                            ${Number(plan.price || 0).toFixed(2)}
                         </span>
                         <span className="text-sm font-medium text-zinc-500">
                             /{billingCycleLabels[plan.billingCycle].toLowerCase()}
                         </span>
                     </div>
-                    {plan.type === 'class-pack' && plan.maxClasses && (
-                        <p className="mt-1 text-sm text-zinc-500">
-                            {plan.maxClasses} classes • Valid for {plan.validityDays} days
-                        </p>
-                    )}
+                    <p className="mt-1 text-sm text-zinc-500">
+                        {plan.type === 'class-pack' && plan.maxClasses
+                            ? `${plan.maxClasses} credits · ${plan.validityDays || 30} days`
+                            : `Valid for ${plan.validityDays || 30} days`}
+                    </p>
                 </div>
             </CardHeader>
 
@@ -119,7 +130,7 @@ export function PricingCard({ plan, onEdit, onArchive, onDelete, featured }: Pri
                 <div className="flex w-full items-center justify-between">
                     <div className="flex items-center gap-2 text-sm text-zinc-500">
                         <Users className="h-4 w-4" />
-                        <span>{plan.subscriberCount} subscribers</span>
+                        <span>{plan.subscriberCount ?? plan.subscribers ?? 0} subscribers</span>
                     </div>
                     <Button
                         variant="outline"

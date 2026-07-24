@@ -12,6 +12,8 @@ export interface PricingPlan {
     status?: PlanStatus;
     maxClasses?: number; // For class packs
     validityDays?: number; // For class packs
+    locationId?: string;
+    locationName?: string;
     createdAt?: string;
     subscriberCount?: number;
     isPopular?: boolean;
@@ -32,6 +34,9 @@ export interface CreatePlanInput {
     features: string[];
     maxClasses?: number;
     validityDays?: number;
+    /** Location UUID from /scheduling/locations/ */
+    locationId?: string;
+    locationName?: string;
 }
 
 // Display labels and config

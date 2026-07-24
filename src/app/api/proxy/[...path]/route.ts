@@ -83,10 +83,20 @@ async function proxyRequest(
     headers.set('Host', getBackendHostHeader());
 
     try {
-        let body: string | undefined;
+        // Use binary for multipart/uploads — request.text() corrupts image bytes
+        let body: ArrayBuffer | string | undefined;
         if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
             try {
-                body = await request.text();
+                const contentType = request.headers.get('content-type') || '';
+                if (
+                    contentType.includes('multipart/form-data') ||
+                    contentType.includes('octet-stream') ||
+                    contentType.includes('image/')
+                ) {
+                    body = await request.arrayBuffer();
+                } else {
+                    body = await request.text();
+                }
             } catch {
                 body = undefined;
             }
@@ -97,11 +107,24 @@ async function proxyRequest(
         const response = await fetch(targetUrl, {
             method,
             headers,
-            body,
+            body:
+                body instanceof ArrayBuffer
+                    ? body.byteLength === 0
+                        ? undefined
+                        : body
+                    : body || undefined,
             redirect: 'manual',
         });
 
-        const responseBody = await response.text();
+        const responseContentType = response.headers.get('Content-Type') || '';
+        const isBinaryResponse =
+            responseContentType.includes('octet-stream') ||
+            responseContentType.includes('image/') ||
+            responseContentType.includes('application/pdf');
+
+        const responseBody = isBinaryResponse
+            ? await response.arrayBuffer()
+            : await response.text();
 
         return new NextResponse(
             response.status === 204 || response.status === 205 || response.status === 304
@@ -111,7 +134,7 @@ async function proxyRequest(
                 status: response.status,
                 statusText: response.statusText,
                 headers: {
-                    'Content-Type': response.headers.get('Content-Type') || 'application/json',
+                    'Content-Type': responseContentType || 'application/json',
                     'Access-Control-Allow-Origin': '*',
                 },
             }

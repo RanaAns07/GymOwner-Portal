@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -21,35 +22,59 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { useCreatePricingPlan } from '@/hooks/use-pricing';
-import { planTypeLabels, billingCycleLabels } from '@/types/pricing';
-import type { PlanType, BillingCycle } from '@/types/pricing';
+import { useCreatePricingPlan, useUpdatePricingPlan } from '@/hooks/use-pricing';
+import { useLocations } from '@/hooks/use-locations';
+import { planTypeLabels } from '@/types/pricing';
+import type { PlanType, PricingPlan } from '@/types/pricing';
 import { Loader2 } from 'lucide-react';
 
-const pricingSchema = z.object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
-    description: z.string().min(1, 'Description is required'),
-    type: z.enum(['membership', 'class-pack']),
-    price: z.string().refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
-        message: 'Price must be greater than 0',
-    }),
-    billingCycle: z.enum(['monthly', 'quarterly', 'yearly', 'one-time']),
-    maxClasses: z.string().optional(),
-    validityDays: z.string().refine((val) => !isNaN(parseInt(val)) && parseInt(val) >= 1, {
-        message: 'Validity must be at least 1 day',
-    }),
-    features: z.string(),
-});
+/**
+ * Form fields match package-types API:
+ * name, credit_count (via type + maxClasses), price, validity_days, location
+ */
+const pricingSchema = z
+    .object({
+        name: z.string().min(2, 'Name must be at least 2 characters'),
+        type: z.enum(['membership', 'class-pack']),
+        locationId: z.string().min(1, 'Please select a location'),
+        price: z.string().refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
+            message: 'Price must be greater than 0',
+        }),
+        maxClasses: z.string().optional(),
+        validityDays: z.string().refine((val) => !isNaN(parseInt(val)) && parseInt(val) >= 1, {
+            message: 'Validity must be at least 1 day',
+        }),
+    })
+    .superRefine((data, ctx) => {
+        if (data.type === 'class-pack') {
+            const credits = parseInt(data.maxClasses || '', 10);
+            if (Number.isNaN(credits) || credits < 1) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: 'Session credits must be at least 1',
+                    path: ['maxClasses'],
+                });
+            }
+        }
+    });
 
 type PricingFormData = z.infer<typeof pricingSchema>;
 
 interface CreatePricingModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    plan?: PricingPlan | null;
 }
 
-export function CreatePricingModal({ open, onOpenChange }: CreatePricingModalProps) {
+export function CreatePricingModal({
+    open,
+    onOpenChange,
+    plan = null,
+}: CreatePricingModalProps) {
     const createPlan = useCreatePricingPlan();
+    const updatePlan = useUpdatePricingPlan();
+    const { data: locations, isLoading: locationsLoading } = useLocations();
+    const isEditing = !!plan;
 
     const {
         register,
@@ -62,37 +87,86 @@ export function CreatePricingModal({ open, onOpenChange }: CreatePricingModalPro
         resolver: zodResolver(pricingSchema),
         defaultValues: {
             name: '',
-            description: '',
             type: 'membership',
+            locationId: '',
             price: '',
-            billingCycle: 'monthly',
-            maxClasses: '',
+            maxClasses: '10',
             validityDays: '30',
-            features: '',
         },
     });
 
+    useEffect(() => {
+        if (!open) return;
+        if (plan) {
+            reset({
+                name: plan.name,
+                type: plan.type,
+                locationId: plan.locationId || locations?.[0]?.id || '',
+                price: String(plan.price),
+                maxClasses:
+                    plan.type === 'class-pack' && plan.maxClasses
+                        ? String(plan.maxClasses)
+                        : '10',
+                validityDays: String(plan.validityDays || 30),
+            });
+        } else {
+            reset({
+                name: '',
+                type: 'membership',
+                locationId: locations?.[0]?.id || '',
+                price: '',
+                maxClasses: '10',
+                validityDays: '30',
+            });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open, plan, reset]);
+
     const selectedType = watch('type');
-    const selectedBillingCycle = watch('billingCycle');
+    const selectedLocationId = watch('locationId');
+    const isPending = createPlan.isPending || updatePlan.isPending;
+
+    useEffect(() => {
+        if (!open || !locations?.length) return;
+        if (
+            !selectedLocationId ||
+            !locations.some((l) => l.id === selectedLocationId)
+        ) {
+            setValue('locationId', locations[0].id, { shouldValidate: true });
+        }
+    }, [open, locations, selectedLocationId, setValue]);
 
     const onSubmit = async (data: PricingFormData) => {
-        // Parse features from newline-separated string
-        const featuresList = data.features
-            .split('\n')
-            .map((f) => f.trim())
-            .filter((f) => f.length > 0);
+        const validityDays = parseInt(data.validityDays, 10);
+        const locationName =
+            locations?.find((l) => l.id === data.locationId)?.name || '';
+        const payload = {
+            name: data.name,
+            description: '',
+            type: data.type as PlanType,
+            price: parseFloat(data.price),
+            billingCycle:
+                validityDays <= 31
+                    ? ('monthly' as const)
+                    : validityDays <= 93
+                      ? ('quarterly' as const)
+                      : validityDays >= 360
+                        ? ('yearly' as const)
+                        : ('one-time' as const),
+            features: [] as string[],
+            maxClasses:
+                data.type === 'class-pack' ? parseInt(data.maxClasses || '1', 10) : 0,
+            validityDays,
+            locationId: data.locationId,
+            locationName,
+        };
 
         try {
-            await createPlan.mutateAsync({
-                name: data.name,
-                description: data.description,
-                type: data.type as PlanType,
-                price: parseFloat(data.price),
-                billingCycle: data.billingCycle as BillingCycle,
-                features: featuresList.length > 0 ? featuresList : ['Full gym access'],
-                maxClasses: data.type === 'class-pack' && data.maxClasses ? parseInt(data.maxClasses) : undefined,
-                validityDays: parseInt(data.validityDays),
-            });
+            if (isEditing && plan) {
+                await updatePlan.mutateAsync({ id: plan.id, data: payload });
+            } else {
+                await createPlan.mutateAsync(payload);
+            }
             onOpenChange(false);
             reset();
         } catch {
@@ -100,18 +174,27 @@ export function CreatePricingModal({ open, onOpenChange }: CreatePricingModalPro
         }
     };
 
-    const handleClose = () => {
-        onOpenChange(false);
-        reset();
-    };
-
     return (
-        <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <Dialog
+            open={open}
+            onOpenChange={(next) => {
+                if (!next) {
+                    onOpenChange(false);
+                    reset();
+                } else {
+                    onOpenChange(true);
+                }
+            }}
+        >
+            <DialogContent className="max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Create Pricing Plan</DialogTitle>
+                    <DialogTitle>
+                        {isEditing ? 'Edit Pricing Plan' : 'Create Pricing Plan'}
+                    </DialogTitle>
                     <DialogDescription>
-                        Add a new membership or class pack to your offerings.
+                        {isEditing
+                            ? 'Update this plan.'
+                            : 'Add a membership or class pack for a location.'}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -130,56 +213,62 @@ export function CreatePricingModal({ open, onOpenChange }: CreatePricingModalPro
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="description">Description</Label>
-                        <Input
-                            id="description"
-                            placeholder="Full access with personal training sessions"
-                            {...register('description')}
-                            className={cn(errors.description && 'border-red-500')}
-                        />
-                        {errors.description && (
-                            <p className="text-xs text-red-500">{errors.description.message}</p>
+                        <Label>Location</Label>
+                        <Select
+                            value={selectedLocationId}
+                            onValueChange={(value) =>
+                                setValue('locationId', value, { shouldValidate: true })
+                            }
+                            disabled={locationsLoading || !locations?.length}
+                        >
+                            <SelectTrigger
+                                className={cn(errors.locationId && 'border-red-500')}
+                            >
+                                <SelectValue
+                                    placeholder={
+                                        locationsLoading
+                                            ? 'Loading locations…'
+                                            : 'Select location'
+                                    }
+                                />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {(locations || []).map((location) => (
+                                    <SelectItem key={location.id} value={location.id}>
+                                        {location.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {errors.locationId && (
+                            <p className="text-xs text-red-500">
+                                {errors.locationId.message}
+                            </p>
+                        )}
+                        {!locationsLoading && (!locations || locations.length === 0) && (
+                            <p className="text-xs text-amber-600">
+                                No locations yet. Add one under Locations first.
+                            </p>
                         )}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label>Plan Type</Label>
-                            <Select
-                                value={selectedType}
-                                onValueChange={(value) => setValue('type', value as PlanType)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {Object.entries(planTypeLabels).map(([value, label]) => (
-                                        <SelectItem key={value} value={value}>
-                                            {label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label>Billing Cycle</Label>
-                            <Select
-                                value={selectedBillingCycle}
-                                onValueChange={(value) => setValue('billingCycle', value as BillingCycle)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {Object.entries(billingCycleLabels).map(([value, label]) => (
-                                        <SelectItem key={value} value={value}>
-                                            {label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                    <div className="space-y-2">
+                        <Label>Plan Type</Label>
+                        <Select
+                            value={selectedType}
+                            onValueChange={(value) => setValue('type', value as PlanType)}
+                        >
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {Object.entries(planTypeLabels).map(([value, label]) => (
+                                    <SelectItem key={value} value={value}>
+                                        {label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -210,7 +299,9 @@ export function CreatePricingModal({ open, onOpenChange }: CreatePricingModalPro
                                 className={cn(errors.validityDays && 'border-red-500')}
                             />
                             {errors.validityDays && (
-                                <p className="text-xs text-red-500">{errors.validityDays.message}</p>
+                                <p className="text-xs text-red-500">
+                                    {errors.validityDays.message}
+                                </p>
                             )}
                         </div>
                     </div>
@@ -224,41 +315,44 @@ export function CreatePricingModal({ open, onOpenChange }: CreatePricingModalPro
                                 min="1"
                                 placeholder="10"
                                 {...register('maxClasses')}
+                                className={cn(errors.maxClasses && 'border-red-500')}
                             />
-                            <p className="text-xs text-zinc-500">
-                                Number of sessions included in this pack
-                            </p>
+                            {errors.maxClasses && (
+                                <p className="text-xs text-red-500">
+                                    {errors.maxClasses.message}
+                                </p>
+                            )}
                         </div>
                     )}
 
-                    <div className="space-y-2">
-                        <Label htmlFor="features">Features (one per line)</Label>
-                        <textarea
-                            id="features"
-                            placeholder={"24/7 gym access\n2 PT sessions/month\nAll group classes"}
-                            rows={4}
-                            {...register('features')}
-                            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                        />
-                        <p className="text-xs text-zinc-500">
-                            Enter each feature on a new line
-                        </p>
-                    </div>
-
-                    <div className="flex justify-end gap-3 pt-4">
-                        <Button type="button" variant="outline" onClick={handleClose}>
+                    <div className="flex justify-end gap-3 pt-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                                onOpenChange(false);
+                                reset();
+                            }}
+                            disabled={isPending}
+                        >
                             Cancel
                         </Button>
                         <Button
                             type="submit"
-                            disabled={createPlan.isPending}
+                            disabled={
+                                isPending ||
+                                locationsLoading ||
+                                !locations?.length
+                            }
                             className="bg-gradient-to-r from-violet-600 to-indigo-600"
                         >
-                            {createPlan.isPending ? (
+                            {isPending ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Creating...
+                                    Saving...
                                 </>
+                            ) : isEditing ? (
+                                'Save changes'
                             ) : (
                                 'Create Plan'
                             )}

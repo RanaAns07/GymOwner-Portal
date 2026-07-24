@@ -13,9 +13,26 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StaffGrid } from '@/components/staff/staff-grid';
 import { AddStaffModal } from '@/components/staff/add-staff-modal';
+import { ViewStaffModal } from '@/components/staff/view-staff-modal';
+import { EditStaffModal } from '@/components/staff/edit-staff-modal';
+import { RemoveStaffDialog } from '@/components/staff/remove-staff-dialog';
 import { useStaffMembers, useDeleteStaffMember } from '@/hooks/use-staff';
-import { roleLabels, statusConfig } from '@/types/staff';
+import type { StaffMember } from '@/types/staff';
+import { statusConfig } from '@/types/staff';
 import { Plus, Search, LayoutGrid, List, Filter, Users } from 'lucide-react';
+
+/** Roles returned/created by the staff API */
+const ROLE_FILTER_OPTIONS = [
+    { value: 'trainer', label: 'Trainer' },
+    { value: 'manager', label: 'Gym Manager' },
+] as const;
+
+/** Status values from staff profile (active / on_leave / inactive) */
+const STATUS_FILTER_OPTIONS = [
+    { value: 'active', label: statusConfig.active.label },
+    { value: 'on-leave', label: statusConfig['on-leave'].label },
+    { value: 'inactive', label: statusConfig.inactive.label },
+] as const;
 
 export default function StaffPage() {
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -23,15 +40,45 @@ export default function StaffPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState<string>('all');
     const [statusFilter, setStatusFilter] = useState<string>('all');
+    const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
+    const [viewOpen, setViewOpen] = useState(false);
+    const [editOpen, setEditOpen] = useState(false);
+    const [removeOpen, setRemoveOpen] = useState(false);
 
     const { data: staff, isLoading } = useStaffMembers();
     const deleteStaff = useDeleteStaffMember();
 
-    // Filter staff based on search and filters
+    const openView = (member: StaffMember) => {
+        setSelectedStaff(member);
+        setViewOpen(true);
+    };
+
+    const openEdit = (member: StaffMember) => {
+        setSelectedStaff(member);
+        setEditOpen(true);
+    };
+
+    const openRemove = (member: StaffMember) => {
+        setSelectedStaff(member);
+        setRemoveOpen(true);
+    };
+
+    const handleConfirmRemove = async () => {
+        if (!selectedStaff) return;
+        try {
+            await deleteStaff.mutateAsync(selectedStaff.id);
+            setRemoveOpen(false);
+            setSelectedStaff(null);
+        } catch {
+            // Toast handled in hook
+        }
+    };
+
     const filteredStaff = staff?.filter((member) => {
+        const fullName = `${member.firstName} ${member.lastName}`.toLowerCase();
         const matchesSearch =
             searchQuery === '' ||
-            `${member.firstName} ${member.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            fullName.includes(searchQuery.toLowerCase()) ||
             member.email.toLowerCase().includes(searchQuery.toLowerCase());
 
         const matchesRole = roleFilter === 'all' || member.role === roleFilter;
@@ -130,7 +177,7 @@ export default function StaffPage() {
                         />
                     </div>
 
-                    {/* Role Filter */}
+                    {/* Role Filter — trainer | gym_manager */}
                     <Select value={roleFilter} onValueChange={setRoleFilter}>
                         <SelectTrigger className="w-40">
                             <Filter className="mr-2 h-4 w-4" />
@@ -138,24 +185,24 @@ export default function StaffPage() {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Roles</SelectItem>
-                            {Object.entries(roleLabels).map(([value, label]) => (
-                                <SelectItem key={value} value={value}>
-                                    {label}
+                            {ROLE_FILTER_OPTIONS.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                    {option.label}
                                 </SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
 
-                    {/* Status Filter */}
+                    {/* Status Filter — active | on_leave | inactive */}
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
                         <SelectTrigger className="w-36">
                             <SelectValue placeholder="Status" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Status</SelectItem>
-                            {Object.entries(statusConfig).map(([value, config]) => (
-                                <SelectItem key={value} value={value}>
-                                    {config.label}
+                            {STATUS_FILTER_OPTIONS.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                    {option.label}
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -177,21 +224,40 @@ export default function StaffPage() {
                 </Tabs>
             </div>
 
-            {/* Staff Grid */}
             <StaffGrid
                 staff={filteredStaff || []}
+                viewMode={viewMode}
                 isLoading={isLoading}
-                onEdit={(staff) => console.log('Edit:', staff)}
-                onDelete={(staff) => {
-                    if (confirm(`Are you sure you want to remove ${staff.firstName} ${staff.lastName}?`)) {
-                        deleteStaff.mutate(staff.id);
-                    }
-                }}
-                onView={(staff) => console.log('View:', staff)}
+                onView={openView}
+                onEdit={openEdit}
+                onDelete={openRemove}
             />
 
-            {/* Add Staff Modal */}
             <AddStaffModal open={isAddModalOpen} onOpenChange={setIsAddModalOpen} />
+
+            <ViewStaffModal
+                open={viewOpen}
+                onOpenChange={setViewOpen}
+                staff={selectedStaff}
+                onEdit={(member) => {
+                    setViewOpen(false);
+                    openEdit(member);
+                }}
+            />
+
+            <EditStaffModal
+                open={editOpen}
+                onOpenChange={setEditOpen}
+                staff={selectedStaff}
+            />
+
+            <RemoveStaffDialog
+                open={removeOpen}
+                onOpenChange={setRemoveOpen}
+                staff={selectedStaff}
+                isRemoving={deleteStaff.isPending}
+                onConfirm={handleConfirmRemove}
+            />
         </div>
     );
 }

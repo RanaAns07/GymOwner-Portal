@@ -36,13 +36,13 @@ export default function SchedulePage() {
 
     const goToPreviousWeek = () => {
         const prev = new Date(currentWeek);
-        prev.setDate(currentWeek.getDate() - 7);
+        prev.setDate(prev.getDate() - 7);
         setCurrentWeek(prev);
     };
 
     const goToNextWeek = () => {
         const next = new Date(currentWeek);
-        next.setDate(currentWeek.getDate() + 7);
+        next.setDate(next.getDate() + 7);
         setCurrentWeek(next);
     };
 
@@ -171,6 +171,7 @@ export default function SchedulePage() {
 
             {/* Weekly Calendar */}
             <WeeklyCalendar
+                weekStart={currentWeek}
                 sessions={sessions || []}
                 isLoading={isLoading}
                 onSlotClick={handleSlotClick}

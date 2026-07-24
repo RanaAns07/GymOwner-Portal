@@ -4,9 +4,9 @@ import {
     fetchClientsFromApi,
     fetchClientPassesFromApi,
     assignPassToClientApi,
+    bulkAssignClientsToStaffApi,
     type ClientPass,
 } from '@/lib/api/clients-api';
-import type { Client } from '@/types/clients';
 
 export const clientKeys = {
     all: ['clients'] as const,
@@ -44,17 +44,41 @@ export function useAssignPass() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ clientId, pricingOptionId }: { clientId: string; pricingOptionId: string }) =>
-            assignPassToClientApi(clientId, pricingOptionId),
+        mutationFn: (input: {
+            clientId: string;
+            packageTypeId: string;
+            creditsRemaining: number;
+            expiresAt: string;
+        }) => assignPassToClientApi(input),
         onSuccess: (_, { clientId }) => {
             queryClient.invalidateQueries({ queryKey: clientKeys.passes(clientId) });
             queryClient.invalidateQueries({ queryKey: clientKeys.lists() });
-            toast.success('Membership assigned successfully!');
+            toast.success('Pricing plan assigned.');
         },
         onError: (error) => {
-            const message = error instanceof Error ? error.message : 'Failed to assign membership';
+            const message = error instanceof Error ? error.message : 'Failed to assign pricing plan';
             toast.error(message);
             console.error('Assign pass error:', error);
+        },
+    });
+}
+
+/** POST /api/v1/scheduling/staff-assignments/bulk-assign/ */
+export function useBulkAssignClients() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ staffId, clientIds }: { staffId: string; clientIds: string[] }) =>
+            bulkAssignClientsToStaffApi(staffId, clientIds),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: clientKeys.lists() });
+            toast.success('Trainer assigned successfully.');
+        },
+        onError: (error) => {
+            const message =
+                error instanceof Error ? error.message : 'Failed to assign clients to trainer';
+            toast.error(message);
+            console.error('Bulk assign error:', error);
         },
     });
 }

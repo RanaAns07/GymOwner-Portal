@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -24,6 +24,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useStaffMembers } from '@/hooks/use-staff';
 import { useCreateSession } from '@/hooks/use-schedule';
+import { useLocations } from '@/hooks/use-locations';
 import { sessionTypeLabels } from '@/types/schedule';
 import type { SessionType } from '@/types/schedule';
 import { Loader2 } from 'lucide-react';
@@ -38,7 +39,7 @@ const sessionSchema = z.object({
     capacity: z.string().refine((val) => !isNaN(parseInt(val)) && parseInt(val) >= 1, {
         message: 'Capacity must be at least 1',
     }),
-    location: z.string().min(1, 'Location is required'),
+    locationId: z.string().min(1, 'Please select a location'),
 });
 
 type SessionFormData = z.infer<typeof sessionSchema>;
@@ -57,15 +58,17 @@ export function CreateSessionModal({
     initialHour,
 }: CreateSessionModalProps) {
     const { data: staff } = useStaffMembers();
+    const { data: locations, isLoading: locationsLoading } = useLocations();
     const createSession = useCreateSession();
 
-    // Get default date string
     const getDefaultDate = () => {
         const date = initialDate || new Date();
-        return date.toISOString().split('T')[0];
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
     };
 
-    // Get default time string
     const getDefaultTime = (hour?: number) => {
         const h = hour ?? new Date().getHours();
         return `${h.toString().padStart(2, '0')}:00`;
@@ -88,40 +91,65 @@ export function CreateSessionModal({
             startTime: getDefaultTime(initialHour),
             endTime: getDefaultTime(initialHour ? initialHour + 1 : undefined),
             capacity: '10',
-            location: 'Studio A',
+            locationId: '',
         },
     });
 
+    // Prefill with live locations when modal opens
+    useEffect(() => {
+        if (!open) return;
+
+        reset({
+            title: '',
+            type: 'group-class',
+            trainerId: '',
+            date: getDefaultDate(),
+            startTime: getDefaultTime(initialHour),
+            endTime: getDefaultTime(initialHour ? initialHour + 1 : undefined),
+            capacity: '10',
+            locationId: locations?.[0]?.id || '',
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open, initialDate, initialHour]);
+
     const selectedType = watch('type');
+    const selectedLocationId = watch('locationId');
+
+    useEffect(() => {
+        if (!open || !locations?.length) return;
+        if (!selectedLocationId || !locations.some((l) => l.id === selectedLocationId)) {
+            setValue('locationId', locations[0].id, { shouldValidate: true });
+        }
+    }, [open, locations, selectedLocationId, setValue]);
 
     const onSubmit = async (data: SessionFormData) => {
-        // Build ISO datetime strings
-        const startDateTime = new Date(`${data.date}T${data.startTime}:00`);
-        const endDateTime = new Date(`${data.date}T${data.endTime}:00`);
+        // Keep wall-clock local times (no toISOString UTC shift)
+        const startTime = `${data.date}T${data.startTime}:00`;
+        const endTime = `${data.date}T${data.endTime}:00`;
+        const locationName =
+            locations?.find((l) => l.id === data.locationId)?.name || 'Studio';
 
         try {
             await createSession.mutateAsync({
                 title: data.title,
                 type: data.type as SessionType,
                 trainerId: data.trainerId,
-                startTime: startDateTime.toISOString(),
-                endTime: endDateTime.toISOString(),
+                startTime,
+                endTime,
                 capacity: parseInt(data.capacity),
-                location: data.location,
+                locationId: data.locationId,
+                locationName,
             });
             onOpenChange(false);
-            reset();
         } catch {
             // Error handled by mutation
         }
     };
 
-    const handleClose = () => {
-        onOpenChange(false);
-        reset();
+    const handleClose = (nextOpen: boolean) => {
+        if (!nextOpen) onOpenChange(false);
     };
 
-    // Filter only trainers
     const trainers = staff?.filter((s) => s.role === 'trainer' && s.status === 'active') || [];
 
     return (
@@ -174,7 +202,9 @@ export function CreateSessionModal({
                                 value={watch('trainerId')}
                                 onValueChange={(value) => setValue('trainerId', value)}
                             >
-                                <SelectTrigger className={cn(errors.trainerId && 'border-red-500')}>
+                                <SelectTrigger
+                                    className={cn(errors.trainerId && 'border-red-500')}
+                                >
                                     <SelectValue placeholder="Select trainer" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -186,9 +216,49 @@ export function CreateSessionModal({
                                 </SelectContent>
                             </Select>
                             {errors.trainerId && (
-                                <p className="text-xs text-red-500">{errors.trainerId.message}</p>
+                                <p className="text-xs text-red-500">
+                                    {errors.trainerId.message}
+                                </p>
                             )}
                         </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label>Location</Label>
+                        <Select
+                            value={selectedLocationId}
+                            onValueChange={(value) =>
+                                setValue('locationId', value, { shouldValidate: true })
+                            }
+                            disabled={locationsLoading || !locations?.length}
+                        >
+                            <SelectTrigger
+                                className={cn(errors.locationId && 'border-red-500')}
+                            >
+                                <SelectValue
+                                    placeholder={
+                                        locationsLoading
+                                            ? 'Loading locations…'
+                                            : 'Select location'
+                                    }
+                                />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {(locations || []).map((location) => (
+                                    <SelectItem key={location.id} value={location.id}>
+                                        {location.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {errors.locationId && (
+                            <p className="text-xs text-red-500">{errors.locationId.message}</p>
+                        )}
+                        {!locationsLoading && (!locations || locations.length === 0) && (
+                            <p className="text-xs text-amber-700">
+                                No locations yet. Add one under Locations first.
+                            </p>
+                        )}
                     </div>
 
                     <div className="space-y-2">
@@ -214,7 +284,9 @@ export function CreateSessionModal({
                                 className={cn(errors.startTime && 'border-red-500')}
                             />
                             {errors.startTime && (
-                                <p className="text-xs text-red-500">{errors.startTime.message}</p>
+                                <p className="text-xs text-red-500">
+                                    {errors.startTime.message}
+                                </p>
                             )}
                         </div>
 
@@ -232,42 +304,35 @@ export function CreateSessionModal({
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="capacity">Capacity</Label>
-                            <Input
-                                id="capacity"
-                                type="number"
-                                min={1}
-                                {...register('capacity')}
-                                className={cn(errors.capacity && 'border-red-500')}
-                            />
-                            {errors.capacity && (
-                                <p className="text-xs text-red-500">{errors.capacity.message}</p>
-                            )}
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="location">Location</Label>
-                            <Input
-                                id="location"
-                                placeholder="Studio A"
-                                {...register('location')}
-                                className={cn(errors.location && 'border-red-500')}
-                            />
-                            {errors.location && (
-                                <p className="text-xs text-red-500">{errors.location.message}</p>
-                            )}
-                        </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="capacity">Capacity</Label>
+                        <Input
+                            id="capacity"
+                            type="number"
+                            min={1}
+                            {...register('capacity')}
+                            className={cn(errors.capacity && 'border-red-500')}
+                        />
+                        {errors.capacity && (
+                            <p className="text-xs text-red-500">{errors.capacity.message}</p>
+                        )}
                     </div>
 
                     <div className="flex justify-end gap-3 pt-4">
-                        <Button type="button" variant="outline" onClick={handleClose}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => onOpenChange(false)}
+                        >
                             Cancel
                         </Button>
                         <Button
                             type="submit"
-                            disabled={createSession.isPending}
+                            disabled={
+                                createSession.isPending ||
+                                locationsLoading ||
+                                !locations?.length
+                            }
                             className="bg-gradient-to-r from-violet-600 to-indigo-600"
                         >
                             {createSession.isPending ? (

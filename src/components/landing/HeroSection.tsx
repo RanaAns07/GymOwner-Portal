@@ -1,13 +1,10 @@
 "use client";
 
-import { Canvas } from "@react-three/fiber";
-import { Suspense, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
-import Experience from "./Experience";
 import { ArrowRight } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { PresentationControls, Float } from "@react-three/drei";
 import Link from "next/link";
+import HeroVisual from "./HeroVisual";
 
 export default function HeroSection() {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -32,84 +29,41 @@ export default function HeroSection() {
     return (
         <section
             ref={containerRef}
-            className="relative h-screen w-full overflow-hidden bg-background"
+            className="relative min-h-screen w-full overflow-hidden bg-[#f7f8fb]"
         >
-            {/* 3D Canvas - behind the text so the frosted panel can blur it */}
-            <div className="absolute inset-0 z-0">
-                <Canvas
-                    camera={{ position: [0, 0, 8], fov: 50 }}
-                    dpr={[1, 2]}
-                    gl={{ antialias: true, powerPreference: "high-performance", alpha: true }}
-                >
-                    <Suspense fallback={null}>
-                        <PresentationControls
-                            global
-                            rotation={[0, 0.3, 0]}
-                            polar={[-Math.PI / 3, Math.PI / 3]}
-                            azimuth={[-Math.PI / 1.4, Math.PI / 1.4]}
-                            snap={true} // Fixed: boolean only
-                            speed={2} // Increased rotation speed
-                        >
-                            <Experience />
-                        </PresentationControls>
-                    </Suspense>
-                </Canvas>
-            </div>
+            {/* Quiet atmosphere — no loud blobs */}
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(14,165,233,0.08),_transparent_55%)]" />
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(15,23,42,0.04),_transparent_50%)]" />
 
-            {/* Hero Content - organic blur shield behind text (no hard box edges) */}
-            <div className="absolute inset-0 z-10 pointer-events-none">
-                <div className="container mx-auto px-6 h-full flex items-center">
-                    <div className="relative max-w-xl w-full md:w-5/12 select-none p-6 md:p-8">
-                        {/* Soft irregular blur shape — only visible when dumbbell passes behind */}
-                        <div
-                            aria-hidden
-                            className="absolute -inset-10 md:-inset-16 backdrop-blur-2xl"
-                            style={{
-                                WebkitMaskImage: `
-                                    radial-gradient(ellipse 72% 58% at 28% 32%, #000 0%, #000 38%, transparent 72%),
-                                    radial-gradient(ellipse 58% 70% at 68% 48%, #000 0%, #000 32%, transparent 68%),
-                                    radial-gradient(ellipse 65% 55% at 42% 78%, #000 0%, #000 30%, transparent 66%),
-                                    radial-gradient(ellipse 48% 42% at 18% 62%, #000 0%, #000 28%, transparent 62%)
-                                `,
-                                maskImage: `
-                                    radial-gradient(ellipse 72% 58% at 28% 32%, #000 0%, #000 38%, transparent 72%),
-                                    radial-gradient(ellipse 58% 70% at 68% 48%, #000 0%, #000 32%, transparent 68%),
-                                    radial-gradient(ellipse 65% 55% at 42% 78%, #000 0%, #000 30%, transparent 66%),
-                                    radial-gradient(ellipse 48% 42% at 18% 62%, #000 0%, #000 28%, transparent 62%)
-                                `,
-                                WebkitMaskComposite: "source-over",
-                                maskComposite: "add",
-                            }}
-                        />
-                        <div ref={textRef} className="relative">
-                            <h1 className="text-5xl md:text-7xl font-bold tracking-tighter leading-tight mb-6 pointer-events-auto cursor-default">
-                                ELEVATE YOUR <br />
-                                <span className="text-gradient">GYM EMPIRE</span>
-                            </h1>
-                            <p className="text-lg md:text-xl text-muted-foreground mb-8 pointer-events-auto cursor-default">
-                                The ultimate management platform designed for modern fitness business owners.
-                                Streamline operations, engage members, and grow faster.
-                            </p>
-                            <div className="flex flex-col sm:flex-row gap-4 pointer-events-auto">
-                                <Link
-                                    href="/login"
-                                    className="px-6 py-3 bg-primary text-primary-foreground rounded-full font-bold text-base flex items-center justify-center gap-2 hover:scale-105 transition-transform"
-                                >
-                                    Get Started Now <ArrowRight className="w-5 h-5" />
-                                </Link>
-                                {/* Watch Demo — restore later */}
-                                {/* <button className="px-6 py-3 glass rounded-full font-bold text-base hover:bg-white/10 transition-colors">
-                                    Watch Demo
-                                </button> */}
-                            </div>
+            <div className="relative z-10 container mx-auto px-6 min-h-screen flex items-center py-20 lg:py-0">
+                <div className="grid w-full grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-10 items-center">
+                    <div ref={textRef} className="relative max-w-xl">
+                        <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+                            Gym management platform
+                        </p>
+                        <h1 className="text-5xl md:text-7xl font-bold tracking-tighter leading-[0.95] mb-6 text-slate-950">
+                            ELEVATE YOUR <br />
+                            <span className="text-gradient">GYM EMPIRE</span>
+                        </h1>
+                        <p className="text-lg md:text-xl text-slate-500 mb-8 max-w-md leading-relaxed">
+                            The ultimate management platform designed for modern fitness business owners.
+                            Streamline operations, engage members, and grow faster.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <Link
+                                href="/login"
+                                className="px-6 py-3.5 bg-slate-950 text-white rounded-full font-bold text-base flex items-center justify-center gap-2 hover:scale-[1.03] transition-transform shadow-lg shadow-slate-950/20"
+                            >
+                                Get Started Now <ArrowRight className="w-5 h-5" />
+                            </Link>
                         </div>
+                    </div>
+
+                    <div className="relative flex justify-center lg:justify-end lg:pl-4">
+                        <HeroVisual />
                     </div>
                 </div>
             </div>
-
-            {/* Background Glows - Behind everything */}
-            <div className="absolute top-1/4 right-0 w-[500px] h-[500px] bg-blue-500/20 rounded-full blur-[120px] z-0 pointer-events-none" />
-            <div className="absolute bottom-1/4 left-0 w-[400px] h-[400px] bg-purple-500/20 rounded-full blur-[100px] z-0 pointer-events-none" />
         </section>
     );
 }

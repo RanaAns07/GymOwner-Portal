@@ -1,178 +1,231 @@
 /**
- * Pricing API Service
- * 
- * Real API calls to the backend for pricing option management.
- * 
- * Backend Endpoints:
- * - GET /api/v1/scheduling/pricing-options/ - List pricing options
- * - POST /api/v1/scheduling/pricing-options/ - Create pricing option
- * - GET /api/v1/scheduling/pricing-options/:id/ - Get pricing option
- * - PATCH /api/v1/scheduling/pricing-options/:id/ - Update pricing option
- * - DELETE /api/v1/scheduling/pricing-options/:id/ - Delete pricing option
- * 
- * Backend PricingOption Model:
- * {
- *   id: string (UUID),
- *   name: string,
- *   price: string (decimal as string),
- *   session_credits: number,
- *   duration_days: number | null,
- *   fixed_start_date: string | null,
- *   fixed_expiry_date: string | null,
- *   created_at: string (ISO datetime)
- * }
+ * Pricing / Package Types API — Gym Scheduling System (web)
+ *
+ * GET    /api/v1/scheduling/package-types/
+ * POST   /api/v1/scheduling/package-types/
+ * PATCH  /api/v1/scheduling/package-types/{id}/
+ * DELETE /api/v1/scheduling/package-types/{id}/
+ *
+ * Stored fields: name, credit_count, price, validity_days, location
  */
 
 import { apiClient } from '@/lib/api';
+import { ensureDefaultLocation, fetchLocationsFromApi } from '@/lib/api/schedule-api';
+import type { ApiPaginatedResponse } from '@/types/api-types';
 import type { PricingPlan, CreatePlanInput, PlanType, BillingCycle } from '@/types/pricing';
 
-// Backend response types (matching Django serializers)
-interface BackendPricingOption {
+interface BackendPackageType {
     id: string;
     name: string;
-    price: string;
-    session_credits: number;
-    duration_days: number | null;
-    fixed_start_date: string | null;
-    fixed_expiry_date: string | null;
-    created_at: string;
-}
-
-interface BackendPaginatedResponse<T> {
-    count: number;
-    next: string | null;
-    previous: string | null;
-    results: T[];
-}
-
-interface BackendCreatePricingRequest {
-    name: string;
-    price: string;
-    session_credits: number;
+    credit_count?: number;
+    credits?: number;
+    session_credits?: number;
+    price: string | number;
+    validity_days?: number;
     duration_days?: number;
-    fixed_start_date?: string;
-    fixed_expiry_date?: string;
+    location?: string | { id?: string; name?: string } | null;
+    location_id?: string;
+    location_name?: string;
+    description?: string;
+    created_at?: string;
 }
 
-/**
- * Maps backend pricing option to frontend PricingPlan
- */
-function mapBackendPricingToPlan(option: BackendPricingOption): PricingPlan {
-    // Determine plan type based on session credits
-    // If unlimited credits (0 or very high), it's a membership
-    const isUnlimited = option.session_credits === 0 || option.session_credits >= 999;
-    const planType: PlanType = isUnlimited ? 'membership' : 'class-pack';
+function unwrapList<T>(response: T[] | ApiPaginatedResponse<T>): T[] {
+    return Array.isArray(response) ? response : response.results ?? [];
+}
 
-    // Determine billing cycle based on duration_days
-    let billingCycle: BillingCycle = 'one-time';
-    if (option.duration_days) {
-        if (option.duration_days <= 31) {
-            billingCycle = 'monthly';
-        } else if (option.duration_days <= 93) {
-            billingCycle = 'quarterly';
-        } else if (option.duration_days >= 360) {
-            billingCycle = 'yearly';
-        }
+function readCredits(option: BackendPackageType): number {
+    const value = option.credit_count ?? option.credits ?? option.session_credits ?? 0;
+    const n = typeof value === 'number' ? value : parseInt(String(value), 10);
+    return Number.isNaN(n) ? 0 : n;
+}
+
+function readValidityDays(option: BackendPackageType): number {
+    const value = option.validity_days ?? option.duration_days ?? 30;
+    const n = typeof value === 'number' ? value : parseInt(String(value), 10);
+    return Number.isNaN(n) || n < 1 ? 30 : n;
+}
+
+function readPrice(option: BackendPackageType): number {
+    const n = typeof option.price === 'number' ? option.price : parseFloat(String(option.price));
+    return Number.isNaN(n) ? 0 : n;
+}
+
+function billingCycleFromDays(days: number): BillingCycle {
+    if (days <= 31) return 'monthly';
+    if (days <= 93) return 'quarterly';
+    if (days >= 360) return 'yearly';
+    return 'one-time';
+}
+
+function readLocationId(option: BackendPackageType): string | undefined {
+    if (typeof option.location === 'string' && option.location) return option.location;
+    if (option.location && typeof option.location === 'object' && option.location.id) {
+        return option.location.id;
     }
+    if (typeof option.location_id === 'string' && option.location_id) return option.location_id;
+    return undefined;
+}
+
+function readLocationName(option: BackendPackageType): string | undefined {
+    if (typeof option.location_name === 'string' && option.location_name.trim()) {
+        return option.location_name;
+    }
+    if (option.location && typeof option.location === 'object' && option.location.name) {
+        return option.location.name;
+    }
+    return undefined;
+}
+
+function mapBackendPackageTypeToPlan(option: BackendPackageType): PricingPlan {
+    const credits = readCredits(option);
+    const validityDays = readValidityDays(option);
+    const price = readPrice(option);
+    const isMembership = credits === 0 || credits >= 999;
+    const planType: PlanType = isMembership ? 'membership' : 'class-pack';
+    const billingCycle = billingCycleFromDays(validityDays);
+    const locationId = readLocationId(option);
+    const locationName = readLocationName(option);
+
+    const description =
+        (typeof option.description === 'string' && option.description.trim()) ||
+        (isMembership
+            ? `Membership · valid for ${validityDays} days`
+            : `${credits} session credits · valid for ${validityDays} days`);
+
+    const features = isMembership
+        ? ['Membership access', `Valid for ${validityDays} days`]
+        : [`${credits} session credits`, `Valid for ${validityDays} days`];
 
     return {
         id: option.id,
         name: option.name,
-        description: `${option.session_credits} sessions, valid for ${option.duration_days || 30} days`,
+        description,
         type: planType,
-        price: parseFloat(option.price),
+        price,
         billingCycle,
-        maxClasses: option.session_credits,
-        validityDays: option.duration_days || 30,
-        features: [
-            `${option.session_credits} session credits`,
-            `Valid for ${option.duration_days || 30} days`,
-        ],
+        maxClasses: isMembership ? undefined : credits,
+        validityDays,
+        locationId,
+        locationName,
+        features,
+        status: 'active',
         isPopular: false,
         isActive: true,
-        subscribers: 0, // Would need separate query
-        createdAt: option.created_at,
+        subscribers: 0,
+        subscriberCount: 0,
+        createdAt: option.created_at || new Date().toISOString(),
     };
 }
 
-/**
- * Fetch all pricing options from the API
- */
-export async function fetchPricingOptionsFromApi(): Promise<PricingPlan[]> {
-    const response = await apiClient.get<BackendPricingOption[] | BackendPaginatedResponse<BackendPricingOption>>(
-        '/scheduling/pricing-options/'
-    );
-
-    // Handle paginated or direct array response
-    const options = 'results' in response ? response.results : response;
-    return options.map(mapBackendPricingToPlan);
+function creditCountForPayload(data: Partial<CreatePlanInput>): number | undefined {
+    if (data.type === 'membership') return 0;
+    if (data.maxClasses !== undefined) return data.maxClasses;
+    return undefined;
 }
 
-/**
- * Fetch a single pricing option by ID
- */
+/** GET /api/v1/scheduling/package-types/ */
+export async function fetchPricingOptionsFromApi(): Promise<PricingPlan[]> {
+    const [response, locations] = await Promise.all([
+        apiClient.get<BackendPackageType[] | ApiPaginatedResponse<BackendPackageType>>(
+            '/scheduling/package-types/'
+        ),
+        fetchLocationsFromApi().catch(() => []),
+    ]);
+
+    const locationNameById = new Map(locations.map((l) => [l.id, l.name]));
+
+    return unwrapList(response).map((option) => {
+        const plan = mapBackendPackageTypeToPlan(option);
+        const locationName =
+            plan.locationName ||
+            (plan.locationId ? locationNameById.get(plan.locationId) : undefined);
+        return { ...plan, locationName };
+    });
+}
+
+/** GET /api/v1/scheduling/package-types/{id}/ */
 export async function fetchPricingOptionFromApi(id: string): Promise<PricingPlan | null> {
     try {
-        const response = await apiClient.get<BackendPricingOption>(`/scheduling/pricing-options/${id}/`);
-        return mapBackendPricingToPlan(response);
+        const response = await apiClient.get<BackendPackageType>(
+            `/scheduling/package-types/${id}/`
+        );
+        return mapBackendPackageTypeToPlan(response);
     } catch {
         return null;
     }
 }
 
 /**
- * Create a new pricing option
+ * POST /api/v1/scheduling/package-types/
+ * Body: { name, credit_count, price, validity_days, location }
  */
 export async function createPricingOptionApi(data: CreatePlanInput): Promise<PricingPlan> {
-    const payload: BackendCreatePricingRequest = {
-        name: data.name,
-        price: data.price.toFixed(2),
-        session_credits: data.maxClasses || 0,
-        duration_days: data.validityDays || 30,
-    };
+    let locationId = data.locationId;
+    if (!locationId) {
+        const fallback = await ensureDefaultLocation();
+        locationId = fallback.id;
+    }
 
-    const response = await apiClient.post<BackendPricingOption>('/scheduling/pricing-options/', payload);
-    return mapBackendPricingToPlan(response);
+    const creditCount =
+        data.type === 'membership' ? 0 : data.maxClasses && data.maxClasses > 0 ? data.maxClasses : 1;
+
+    const response = await apiClient.post<BackendPackageType>('/scheduling/package-types/', {
+        name: data.name,
+        credit_count: creditCount,
+        price: data.price.toFixed(2),
+        validity_days: data.validityDays || 30,
+        location: locationId,
+    });
+    const plan = mapBackendPackageTypeToPlan(response);
+    return {
+        ...plan,
+        locationId: plan.locationId || locationId,
+        locationName: plan.locationName || data.locationName,
+    };
 }
 
-/**
- * Update an existing pricing option
- */
+/** PATCH /api/v1/scheduling/package-types/{id}/ */
 export async function updatePricingOptionApi(
     id: string,
     data: Partial<CreatePlanInput>
 ): Promise<PricingPlan> {
-    const payload: Partial<BackendCreatePricingRequest> = {};
-
+    const payload: Record<string, unknown> = {};
     if (data.name !== undefined) payload.name = data.name;
     if (data.price !== undefined) payload.price = data.price.toFixed(2);
-    if (data.maxClasses !== undefined) payload.session_credits = data.maxClasses;
-    if (data.validityDays !== undefined) payload.duration_days = data.validityDays;
+    if (data.validityDays !== undefined) payload.validity_days = data.validityDays;
+    if (data.locationId !== undefined) payload.location = data.locationId;
 
-    const response = await apiClient.patch<BackendPricingOption>(`/scheduling/pricing-options/${id}/`, payload);
-    return mapBackendPricingToPlan(response);
+    const credits = creditCountForPayload(data);
+    if (credits !== undefined) payload.credit_count = credits;
+
+    const response = await apiClient.patch<BackendPackageType>(
+        `/scheduling/package-types/${id}/`,
+        payload
+    );
+    const plan = mapBackendPackageTypeToPlan(response);
+    return {
+        ...plan,
+        locationId: plan.locationId || data.locationId,
+        locationName: plan.locationName || data.locationName,
+    };
 }
 
-/**
- * Delete a pricing option
- */
-export async function deletePricingOptionApi(id: string): Promise<boolean> {
+/** DELETE /api/v1/scheduling/package-types/{id}/ */
+export async function deletePricingOptionApi(id: string): Promise<void> {
     try {
-        await apiClient.delete(`/scheduling/pricing-options/${id}/`);
-        return true;
-    } catch {
-        return false;
+        await apiClient.delete(`/scheduling/package-types/${id}/`);
+    } catch (error) {
+        // Already deleted (e.g. double-click after a successful 204)
+        if (error instanceof Error && 'status' in error && (error as { status: number }).status === 404) {
+            return;
+        }
+        throw error;
     }
 }
 
-/**
- * Archive a pricing option (soft delete by marking inactive)
- * Note: Backend doesn't have is_active field on PricingOption yet
- * This will just delete for now
- */
 export async function archivePricingOptionApi(id: string): Promise<PricingPlan> {
-    // The backend doesn't have is_active on PricingOption
-    // For now we'll just fetch it (no-op)
-    const response = await apiClient.get<BackendPricingOption>(`/scheduling/pricing-options/${id}/`);
-    return mapBackendPricingToPlan(response);
+    const plan = await fetchPricingOptionFromApi(id);
+    if (!plan) throw new Error('Package type not found');
+    return plan;
 }

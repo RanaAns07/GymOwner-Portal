@@ -1,6 +1,8 @@
 /**
- * Auth API — matches Gym Scheduling System
+ * Auth API — Gym Scheduling System (web)
+ *
  * POST /api/v1/users/auth/login/
+ * POST /api/v1/users/auth/token/refresh/
  */
 
 import type { ApiLoginRequest, ApiLoginResponse } from '@/types/api-types';
@@ -31,17 +33,14 @@ function parseLoginError(payload: unknown, status: number): AuthApiError {
 
     const data = payload as Record<string, unknown>;
 
-    // Django SimpleJWT: { "detail": "No active account..." }
     if (typeof data.detail === 'string' && data.detail.trim()) {
         return new AuthApiError(data.detail, status);
     }
 
-    // { "non_field_errors": ["..."] }
     if (Array.isArray(data.non_field_errors) && data.non_field_errors.length > 0) {
         return new AuthApiError(String(data.non_field_errors[0]), status);
     }
 
-    // { "message": "..." } / { "error": "..." }
     if (typeof data.message === 'string' && data.message.trim()) {
         return new AuthApiError(data.message, status);
     }
@@ -49,7 +48,6 @@ function parseLoginError(payload: unknown, status: number): AuthApiError {
         return new AuthApiError(data.error, status);
     }
 
-    // Field errors: { "email": ["..."], "password": ["..."] }
     const fieldErrors: Record<string, string[]> = {};
     for (const [key, value] of Object.entries(data)) {
         if (Array.isArray(value) && value.every((v) => typeof v === 'string')) {
@@ -105,12 +103,12 @@ export async function loginApi(credentials: ApiLoginRequest): Promise<ApiLoginRe
 }
 
 /**
- * POST /api/v1/users/auth/refresh/
+ * POST /api/v1/users/auth/token/refresh/
  * Body: { refresh }
  * Returns: { access }
  */
 export async function refreshTokenApi(refresh: string): Promise<string> {
-    const response = await fetch(`${AUTH_BASE}/refresh/`, {
+    const response = await fetch(`${AUTH_BASE}/token/refresh/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

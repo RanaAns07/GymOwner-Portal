@@ -3,57 +3,88 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { PricingCard, PricingCardSkeleton } from '@/components/pricing/pricing-card';
 import { CreatePricingModal } from '@/components/pricing/create-pricing-modal';
-import { usePricingPlans, useArchivePricingPlan, useDeletePricingPlan } from '@/hooks/use-pricing';
-import { Plus, CreditCard, Package, TrendingUp, DollarSign } from 'lucide-react';
+import { usePricingPlans, useDeletePricingPlan } from '@/hooks/use-pricing';
+import { Plus, CreditCard, Package, TrendingUp, DollarSign, Loader2 } from 'lucide-react';
 import type { PricingPlan } from '@/types/pricing';
 
 export default function PricingPage() {
     const [activeTab, setActiveTab] = useState<string>('all');
-    const [createModalOpen, setCreateModalOpen] = useState(false);
+    const [formOpen, setFormOpen] = useState(false);
+    const [editingPlan, setEditingPlan] = useState<PricingPlan | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<PricingPlan | null>(null);
+
     const { data: plans, isLoading } = usePricingPlans();
-    const archivePlan = useArchivePricingPlan();
     const deletePlan = useDeletePricingPlan();
 
-    // Filter plans by type
     const filteredPlans = plans?.filter((plan) => {
-        if (activeTab === 'all') return plan.status === 'active';
-        if (activeTab === 'membership') return plan.type === 'membership' && plan.status === 'active';
-        if (activeTab === 'class-pack') return plan.type === 'class-pack' && plan.status === 'active';
-        if (activeTab === 'archived') return plan.status === 'archived';
+        const status = plan.status ?? (plan.isActive === false ? 'archived' : 'active');
+        if (activeTab === 'all') return status === 'active';
+        if (activeTab === 'membership') return plan.type === 'membership' && status === 'active';
+        if (activeTab === 'class-pack') return plan.type === 'class-pack' && status === 'active';
+        if (activeTab === 'archived') return status === 'archived';
         return true;
     });
 
-    // Stats
-    const activePlansCount = plans?.filter((p) => p.status === 'active').length || 0;
-    const totalSubscribers = plans?.reduce((acc, p) => acc + (p.subscriberCount ?? 0), 0) || 0;
-    const monthlyRevenue = plans
-        ?.filter((p) => p.status === 'active' && p.billingCycle === 'monthly')
-        .reduce((acc, p) => acc + p.price * (p.subscriberCount ?? 0), 0) || 0;
+    const activePlans = plans?.filter(
+        (p) => (p.status ?? (p.isActive === false ? 'archived' : 'active')) === 'active'
+    ) || [];
+    const activePlansCount = activePlans.length;
+    const totalSubscribers = plans?.reduce(
+        (acc, p) => acc + (p.subscriberCount ?? p.subscribers ?? 0),
+        0
+    ) || 0;
+    const monthlyRevenue =
+        activePlans
+            .filter((p) => p.billingCycle === 'monthly')
+            .reduce(
+                (acc, p) => acc + p.price * (p.subscriberCount ?? p.subscribers ?? 0),
+                0
+            ) || 0;
 
-    const handleArchive = (plan: PricingPlan) => {
-        archivePlan.mutate(plan.id);
+    const openCreate = () => {
+        setEditingPlan(null);
+        setFormOpen(true);
     };
 
-    const handleDelete = (plan: PricingPlan) => {
-        if (confirm(`Are you sure you want to delete "${plan.name}"?`)) {
-            deletePlan.mutate(plan.id);
+    const openEdit = (plan: PricingPlan) => {
+        setEditingPlan(plan);
+        setFormOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!deleteTarget || deletePlan.isPending) return;
+        const id = deleteTarget.id;
+        try {
+            await deletePlan.mutateAsync(id);
+            setDeleteTarget(null);
+        } catch {
+            // Toast handled in hook — still close if already removed
+            setDeleteTarget(null);
         }
     };
 
     return (
         <div className="space-y-6">
-            {/* Page Header */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Pricing Engine</h1>
+                    <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
+                        Pricing Engine
+                    </h1>
                     <p className="mt-1 text-sm text-zinc-500">
                         Manage membership plans and class packages.
                     </p>
                 </div>
                 <Button
-                    onClick={() => setCreateModalOpen(true)}
+                    onClick={openCreate}
                     className="gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 shadow-lg shadow-violet-500/25 hover:from-violet-700 hover:to-indigo-700"
                 >
                     <Plus className="h-4 w-4" />
@@ -61,7 +92,6 @@ export default function PricingPage() {
                 </Button>
             </div>
 
-            {/* Stats Cards */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="rounded-2xl border border-zinc-200/60 bg-white p-5">
                     <div className="flex items-center gap-4">
@@ -93,7 +123,10 @@ export default function PricingPage() {
                         <div>
                             <p className="text-sm font-medium text-zinc-500">Monthly Revenue</p>
                             <p className="text-2xl font-bold text-zinc-900">
-                                ${monthlyRevenue.toLocaleString('en-US', { minimumFractionDigits: 0 })}
+                                $
+                                {monthlyRevenue.toLocaleString('en-US', {
+                                    minimumFractionDigits: 0,
+                                })}
                             </p>
                         </div>
                     </div>
@@ -106,10 +139,12 @@ export default function PricingPage() {
                         <div>
                             <p className="text-sm font-medium text-zinc-500">Avg. Plan Value</p>
                             <p className="text-2xl font-bold text-zinc-900">
-                                ${activePlansCount > 0 && plans
-                                    ? (plans.filter((p) => p.status === 'active')
-                                        .reduce((acc, p) => acc + p.price, 0) / activePlansCount
-                                    ).toFixed(2)
+                                $
+                                {activePlansCount > 0
+                                    ? (
+                                          activePlans.reduce((acc, p) => acc + p.price, 0) /
+                                          activePlansCount
+                                      ).toFixed(2)
                                     : '0.00'}
                             </p>
                         </div>
@@ -117,7 +152,6 @@ export default function PricingPage() {
                 </div>
             </div>
 
-            {/* Tabs */}
             <div className="rounded-2xl border border-zinc-200/60 bg-white p-4">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                     <TabsList className="bg-zinc-100">
@@ -129,7 +163,6 @@ export default function PricingPage() {
                 </Tabs>
             </div>
 
-            {/* Plans Grid */}
             {isLoading ? (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {Array.from({ length: 6 }).map((_, i) => (
@@ -142,10 +175,8 @@ export default function PricingPage() {
                         <PricingCard
                             key={plan.id}
                             plan={plan}
-                            featured={plan.name === 'Premium Membership'}
-                            onEdit={(p) => console.log('Edit:', p)}
-                            onArchive={handleArchive}
-                            onDelete={handleDelete}
+                            onEdit={openEdit}
+                            onDelete={setDeleteTarget}
                         />
                     ))}
                 </div>
@@ -159,7 +190,7 @@ export default function PricingPage() {
                         Create your first pricing plan to get started.
                     </p>
                     <Button
-                        onClick={() => setCreateModalOpen(true)}
+                        onClick={openCreate}
                         className="mt-4 bg-gradient-to-r from-violet-600 to-indigo-600"
                     >
                         <Plus className="mr-2 h-4 w-4" />
@@ -168,11 +199,57 @@ export default function PricingPage() {
                 </div>
             )}
 
-            {/* Create Pricing Modal */}
             <CreatePricingModal
-                open={createModalOpen}
-                onOpenChange={setCreateModalOpen}
+                open={formOpen}
+                onOpenChange={(open) => {
+                    setFormOpen(open);
+                    if (!open) setEditingPlan(null);
+                }}
+                plan={editingPlan}
             />
+
+            <Dialog
+                open={!!deleteTarget}
+                onOpenChange={(open) => {
+                    if (!open) setDeleteTarget(null);
+                }}
+            >
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Delete plan?</DialogTitle>
+                        <DialogDescription>
+                            This will permanently remove{' '}
+                            <span className="font-medium text-zinc-800">
+                                {deleteTarget?.name}
+                            </span>
+                            .
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex justify-end gap-3 pt-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => setDeleteTarget(null)}
+                            disabled={deletePlan.isPending}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleConfirmDelete}
+                            disabled={deletePlan.isPending}
+                        >
+                            {deletePlan.isPending ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Deleting…
+                                </>
+                            ) : (
+                                'Delete'
+                            )}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

@@ -2,9 +2,9 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronRight, Bell, Search } from 'lucide-react';
+import { ChevronRight /* , Bell, Search */ } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ProfileAvatar } from '@/components/ui/profile-avatar';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -13,17 +13,19 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
+// import { Input } from '@/components/ui/input';
 import { useAuth } from '@/providers/auth-context';
 
 // Map paths to readable names
 const pathNameMap: Record<string, string> = {
     dashboard: 'Dashboard',
     staff: 'Staff',
+    locations: 'Locations',
     pricing: 'Pricing',
     clients: 'Clients',
     schedule: 'Schedule',
     settings: 'Settings',
+    profile: 'Profile Settings',
     help: 'Help & Support',
 };
 
@@ -80,9 +82,9 @@ export function Header() {
                 <Breadcrumbs />
             </div>
 
-            {/* Right: Search, Notifications, Profile */}
+            {/* Right: Profile */}
             <div className="flex items-center gap-3">
-                {/* Search */}
+                {/* Search — hidden for now
                 <div className="relative hidden md:block">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
                     <Input
@@ -91,8 +93,9 @@ export function Header() {
                         className="w-64 rounded-xl border-zinc-200 bg-zinc-50/50 pl-9 text-sm placeholder:text-zinc-400 focus:bg-white focus:ring-2 focus:ring-violet-500/20"
                     />
                 </div>
+                */}
 
-                {/* Notifications */}
+                {/* Notifications — hidden for now
                 <Button
                     variant="ghost"
                     size="icon"
@@ -101,6 +104,7 @@ export function Header() {
                     <Bell className="h-5 w-5" />
                     <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-violet-600 ring-2 ring-white" />
                 </Button>
+                */}
 
                 {/* Profile Dropdown */}
                 <DropdownMenu>
@@ -109,12 +113,13 @@ export function Header() {
                             variant="ghost"
                             className="flex items-center gap-2 rounded-xl px-2 py-1.5 hover:bg-zinc-100"
                         >
-                            <Avatar className="h-8 w-8 ring-2 ring-zinc-200">
-                                {/* Removed invalid src to force fallback */}
-                                <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-500 text-xs font-medium text-white">
-                                    {initials}
-                                </AvatarFallback>
-                            </Avatar>
+                            <ProfileAvatar
+                                className="h-8 w-8 ring-2 ring-zinc-200"
+                                src={user?.profile?.profile_image}
+                                alt={displayName}
+                                fallback={initials}
+                                fallbackClassName="bg-gradient-to-br from-violet-500 to-indigo-500 text-xs font-medium text-white"
+                            />
                             <div className="hidden flex-col items-start text-sm lg:flex">
                                 <span className="font-medium text-zinc-900">{displayName}</span>
                                 <span className="text-xs text-zinc-500 capitalize">{displayRole}</span>
@@ -124,19 +129,9 @@ export function Header() {
                     <DropdownMenuContent align="end" className="w-56">
                         <DropdownMenuLabel>My Account</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                            <Link href="/dashboard/profile" className="flex w-full">
+                        <DropdownMenuItem asChild>
+                            <Link href="/dashboard/profile" className="flex w-full cursor-pointer">
                                 Profile Settings
-                            </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <Link href="/dashboard/billing" className="flex w-full">
-                                Billing
-                            </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <Link href="/dashboard/settings" className="flex w-full">
-                                Settings
                             </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
