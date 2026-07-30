@@ -186,7 +186,7 @@ export function LocationFormModal({
                         <Button
                             type="submit"
                             disabled={isPending}
-                            className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700"
+
                         >
                             {isPending ? (
                                 <>

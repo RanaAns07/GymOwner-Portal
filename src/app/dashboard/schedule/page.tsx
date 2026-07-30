@@ -9,6 +9,7 @@ import { useSessions } from '@/hooks/use-schedule';
 import { sessionTypeLabels, sessionTypeColors } from '@/types/schedule';
 import type { Session } from '@/types/schedule';
 import { Plus, ChevronLeft, ChevronRight, Calendar, Clock, Users } from 'lucide-react';
+import { PageReveal } from '@/components/dashboard/PageReveal';
 import { cn } from '@/lib/utils';
 
 export default function SchedulePage() {
@@ -73,18 +74,18 @@ export default function SchedulePage() {
     const totalEnrolled = sessions?.reduce((acc, s) => acc + s.enrolledCount, 0) || 0;
 
     return (
-        <div className="space-y-6">
+        <PageReveal className="space-y-6">
             {/* Page Header */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Schedule</h1>
-                    <p className="mt-1 text-sm text-zinc-500">
+                    <h1 className="text-2xl font-extrabold tracking-tight text-ink">Schedule</h1>
+                    <p className="mt-1 text-sm text-ink-muted">
                         Manage classes, sessions, and trainer schedules.
                     </p>
                 </div>
                 <Button
                     onClick={handleNewSession}
-                    className="gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 shadow-lg shadow-violet-500/25 hover:from-violet-700 hover:to-indigo-700"
+                    className="gap-2 shadow-lg shadow-primary/20"
                 >
                     <Plus className="h-4 w-4" />
                     New Session
@@ -93,47 +94,47 @@ export default function SchedulePage() {
 
             {/* Stats Cards */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="rounded-2xl border border-zinc-200/60 bg-white p-5">
+                <div className="rounded-2xl border border-border bg-card p-5">
                     <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-100">
-                            <Calendar className="h-6 w-6 text-violet-600" />
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15">
+                            <Calendar className="h-6 w-6 text-accent-foreground" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-zinc-500">This Week</p>
-                            <p className="text-2xl font-bold text-zinc-900">{totalSessions} sessions</p>
+                            <p className="text-sm font-medium text-ink-muted">This Week</p>
+                            <p className="text-2xl font-bold text-ink">{totalSessions} sessions</p>
                         </div>
                     </div>
                 </div>
-                <div className="rounded-2xl border border-zinc-200/60 bg-white p-5">
+                <div className="rounded-2xl border border-border bg-card p-5">
                     <div className="flex items-center gap-4">
                         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100">
                             <Users className="h-6 w-6 text-emerald-600" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-zinc-500">Total Enrolled</p>
-                            <p className="text-2xl font-bold text-zinc-900">{totalEnrolled}</p>
+                            <p className="text-sm font-medium text-ink-muted">Total Enrolled</p>
+                            <p className="text-2xl font-bold text-ink">{totalEnrolled}</p>
                         </div>
                     </div>
                 </div>
-                <div className="rounded-2xl border border-zinc-200/60 bg-white p-5">
+                <div className="rounded-2xl border border-border bg-card p-5">
                     <div className="flex items-center gap-4">
                         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100">
                             <Clock className="h-6 w-6 text-blue-600" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-zinc-500">Total Capacity</p>
-                            <p className="text-2xl font-bold text-zinc-900">{totalCapacity}</p>
+                            <p className="text-sm font-medium text-ink-muted">Total Capacity</p>
+                            <p className="text-2xl font-bold text-ink">{totalCapacity}</p>
                         </div>
                     </div>
                 </div>
-                <div className="rounded-2xl border border-zinc-200/60 bg-white p-5">
+                <div className="rounded-2xl border border-border bg-card p-5">
                     <div className="flex items-center gap-4">
                         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100">
                             <Users className="h-6 w-6 text-amber-600" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-zinc-500">Fill Rate</p>
-                            <p className="text-2xl font-bold text-zinc-900">
+                            <p className="text-sm font-medium text-ink-muted">Fill Rate</p>
+                            <p className="text-2xl font-bold text-ink">
                                 {totalCapacity > 0 ? Math.round((totalEnrolled / totalCapacity) * 100) : 0}%
                             </p>
                         </div>
@@ -142,7 +143,7 @@ export default function SchedulePage() {
             </div>
 
             {/* Calendar Controls */}
-            <div className="flex flex-col gap-4 rounded-2xl border border-zinc-200/60 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
                     <Button variant="outline" size="icon" onClick={goToPreviousWeek}>
                         <ChevronLeft className="h-4 w-4" />
@@ -153,7 +154,7 @@ export default function SchedulePage() {
                     <Button variant="outline" size="sm" onClick={goToToday}>
                         Today
                     </Button>
-                    <h2 className="text-lg font-semibold text-zinc-900">{getWeekRange()}</h2>
+                    <h2 className="text-lg font-semibold text-ink">{getWeekRange()}</h2>
                 </div>
 
                 {/* Legend */}
@@ -162,7 +163,7 @@ export default function SchedulePage() {
                         ([type, label]) => (
                             <div key={type} className="flex items-center gap-1.5">
                                 <div className={cn("h-3 w-3 rounded", sessionTypeColors[type])} />
-                                <span className="text-xs text-zinc-600">{label}</span>
+                                <span className="text-xs text-ink-muted">{label}</span>
                             </div>
                         )
                     )}
@@ -192,6 +193,6 @@ export default function SchedulePage() {
                 onOpenChange={setEditModalOpen}
                 session={selectedSession}
             />
-        </div>
+        </PageReveal>
     );
 }

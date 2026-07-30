@@ -104,7 +104,7 @@ function SessionSlot({
                 )}
                 {isFull && (
                     <Badge
-                        className="absolute top-1 right-1 bg-white/20 text-white text-[10px] px-1.5 py-0"
+                        className="absolute top-1 right-1 bg-card/20 text-white text-[10px] px-1.5 py-0"
                     >
                         Full
                     </Badge>
@@ -149,7 +149,7 @@ export function WeeklyCalendar({
 
     if (isLoading) {
         return (
-            <div className="rounded-2xl border border-zinc-200/60 bg-white overflow-hidden">
+            <div className="rounded-2xl border border-border bg-card overflow-hidden">
                 <div className="grid grid-cols-8 border-b border-zinc-100">
                     <div className="p-3" />
                     {DAYS.map((day) => (
@@ -182,10 +182,10 @@ export function WeeklyCalendar({
     }
 
     return (
-        <div className="rounded-2xl border border-zinc-200/60 bg-white overflow-hidden">
+        <div className="rounded-2xl border border-border bg-card overflow-hidden">
             {/* Header */}
-            <div className="grid grid-cols-8 border-b border-zinc-100 bg-zinc-50/50">
-                <div className="p-3 text-xs font-medium text-zinc-500 text-center">Time</div>
+            <div className="grid grid-cols-8 border-b border-zinc-100 bg-canvas/50">
+                <div className="p-3 text-xs font-medium text-ink-muted text-center">Time</div>
                 {weekDates.map((date, index) => {
                     const isToday = date.toDateString() === today.toDateString();
                     return (
@@ -193,16 +193,16 @@ export function WeeklyCalendar({
                             key={index}
                             className={cn(
                                 "p-3 text-center border-l border-zinc-100",
-                                isToday && "bg-violet-50"
+                                isToday && "bg-primary/10"
                             )}
                         >
-                            <p className="text-xs font-medium text-zinc-500 mb-1">{DAYS[index]}</p>
+                            <p className="text-xs font-medium text-ink-muted mb-1">{DAYS[index]}</p>
                             <div
                                 className={cn(
                                     "inline-flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold",
                                     isToday
-                                        ? "bg-violet-600 text-white"
-                                        : "text-zinc-900"
+                                        ? "bg-primary text-primary-foreground"
+                                        : "text-ink"
                                 )}
                             >
                                 {date.getDate()}
@@ -215,13 +215,13 @@ export function WeeklyCalendar({
             {/* Calendar Grid */}
             <div className="grid grid-cols-8 overflow-auto max-h-[600px]">
                 {/* Time Column */}
-                <div className="col-span-1 bg-zinc-50/30">
+                <div className="col-span-1 bg-canvas/30">
                     {HOURS.map((hour) => (
                         <div
                             key={hour}
                             className="h-16 border-b border-zinc-100 px-2 py-1"
                         >
-                            <span className="text-xs font-medium text-zinc-500">
+                            <span className="text-xs font-medium text-ink-muted">
                                 {hour === 12 ? '12 PM' : hour > 12 ? `${hour - 12} PM` : `${hour} AM`}
                             </span>
                         </div>
@@ -239,14 +239,14 @@ export function WeeklyCalendar({
                             key={dayIndex}
                             className={cn(
                                 "col-span-1 border-l border-zinc-100 relative",
-                                isToday && "bg-violet-50/30"
+                                isToday && "bg-primary/5"
                             )}
                         >
                             {/* Hour slots */}
                             {HOURS.map((hour) => (
                                 <div
                                     key={hour}
-                                    className="h-16 border-b border-zinc-100 hover:bg-zinc-50 cursor-pointer transition-colors"
+                                    className="h-16 border-b border-zinc-100 hover:bg-canvas cursor-pointer transition-colors"
                                     onClick={() => onSlotClick?.(date, hour)}
                                 />
                             ))}

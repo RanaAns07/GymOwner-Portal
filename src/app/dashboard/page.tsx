@@ -1,10 +1,17 @@
 'use client';
 
 import Link from 'next/link';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useDashboardSummary } from '@/hooks/use-dashboard';
 import { useAuth } from '@/providers/auth-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { DashboardHeroVisual } from '@/components/dashboard/DashboardHeroVisual';
+import {
+    PageReveal,
+    staggerContainer,
+    staggerItem,
+} from '@/components/dashboard/PageReveal';
 import {
     Users,
     UserCircle,
@@ -17,7 +24,9 @@ import {
 
 export default function DashboardPage() {
     const { user } = useAuth();
-    const { data, isLoading, isError, error, refetch, isFetching } = useDashboardSummary();
+    const reduce = useReducedMotion();
+    const { data, isLoading, isError, error, refetch, isFetching } =
+        useDashboardSummary();
 
     const greetingName =
         user?.nickname ||
@@ -30,64 +39,74 @@ export default function DashboardPage() {
             label: 'Staff',
             value: data?.totalStaff ?? 0,
             icon: Users,
-            tone: 'bg-violet-100 text-violet-600',
             href: '/dashboard/staff',
         },
         {
             label: 'Clients',
             value: data?.totalClients ?? 0,
             icon: UserCircle,
-            tone: 'bg-emerald-100 text-emerald-600',
             href: '/dashboard/clients',
         },
         {
             label: 'Sessions (week)',
             value: data?.weekSessions ?? 0,
             icon: Calendar,
-            tone: 'bg-blue-100 text-blue-600',
             href: '/dashboard/schedule',
         },
         {
             label: 'Fill rate',
             value: `${data?.fillRatePercent ?? 0}%`,
             icon: Percent,
-            tone: 'bg-amber-100 text-amber-600',
             href: '/dashboard/schedule',
         },
         {
             label: 'Staff utilization',
             value: `${data?.staffUtilizationPercent ?? 0}%`,
             icon: Activity,
-            tone: 'bg-indigo-100 text-indigo-600',
             href: '/dashboard/staff',
         },
         {
             label: 'No-show rate',
             value: `${data?.noShowRatePercent ?? 0}%`,
             icon: UserX,
-            tone: 'bg-rose-100 text-rose-600',
             href: '/dashboard/clients',
         },
     ];
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
-                        Welcome back, {greetingName}
-                    </h1>
-                    <p className="mt-1 text-sm text-zinc-500">
-                        Overview of your gym operations and scheduling health.
-                    </p>
+        <PageReveal className="space-y-8">
+            <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-stretch">
+                <div className="flex flex-col justify-center gap-4">
+                    <div>
+                        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-muted">
+                            Operations overview
+                        </p>
+                        <h1 className="text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">
+                            Welcome back, {greetingName}
+                        </h1>
+                        <p className="mt-1.5 max-w-lg text-sm text-ink-muted">
+                            Scheduling health and team capacity across your
+                            locations — calm, clear, in control.
+                        </p>
+                    </div>
+                    <div>
+                        <Button
+                            variant="outline"
+                            onClick={() => refetch()}
+                            disabled={isFetching}
+                            className="rounded-full bg-card/70 backdrop-blur-sm"
+                        >
+                            {isFetching ? 'Refreshing…' : 'Refresh'}
+                        </Button>
+                    </div>
                 </div>
-                <Button
-                    variant="outline"
-                    onClick={() => refetch()}
-                    disabled={isFetching}
-                >
-                    {isFetching ? 'Refreshing…' : 'Refresh'}
-                </Button>
+
+                <DashboardHeroVisual
+                  className="min-h-[220px]"
+                  fillRate={data?.fillRatePercent ?? 0}
+                  weekSessions={data?.weekSessions ?? 0}
+                  staffUtilization={data?.staffUtilizationPercent ?? 0}
+                />
             </div>
 
             {isError && (
@@ -98,71 +117,101 @@ export default function DashboardPage() {
                 </div>
             )}
 
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <motion.div
+                variants={reduce ? undefined : staggerContainer}
+                initial={reduce ? false : 'hidden'}
+                animate={reduce ? undefined : 'show'}
+                className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+            >
                 {isLoading
                     ? Array.from({ length: 6 }).map((_, i) => (
                           <div
                               key={i}
-                              className="rounded-2xl border border-zinc-200/60 bg-white p-5"
+                              className="rounded-2xl border border-border bg-card/80 p-5 backdrop-blur-sm"
                           >
-                              <Skeleton className="h-12 w-12 rounded-xl" />
+                              <Skeleton className="h-11 w-11 rounded-xl" />
                               <Skeleton className="mt-4 h-4 w-24" />
                               <Skeleton className="mt-2 h-8 w-16" />
                           </div>
                       ))
                     : cards.map((card) => (
-                          <Link
+                          <motion.div
                               key={card.label}
-                              href={card.href}
-                              className="group rounded-2xl border border-zinc-200/60 bg-white p-5 transition-shadow hover:shadow-md"
+                              variants={reduce ? undefined : staggerItem}
+                              whileHover={
+                                  reduce
+                                      ? undefined
+                                      : { y: -3, transition: { duration: 0.2 } }
+                              }
                           >
-                              <div className="flex items-start justify-between">
-                                  <div
-                                      className={`flex h-12 w-12 items-center justify-center rounded-xl ${card.tone}`}
-                                  >
-                                      <card.icon className="h-6 w-6" />
+                              <Link
+                                  href={card.href}
+                                  className="group flex h-full flex-col rounded-2xl border border-border bg-card/80 p-5 backdrop-blur-sm transition-colors duration-300 hover:border-primary/35 hover:bg-card hover:shadow-[0_20px_40px_-28px_rgba(11,18,32,0.35)]"
+                              >
+                                  <div className="flex items-start justify-between">
+                                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/15 text-accent-foreground transition-transform duration-300 group-hover:scale-105">
+                                          <card.icon className="h-5 w-5" />
+                                      </div>
+                                      <ArrowRight className="h-4 w-4 text-border transition group-hover:translate-x-0.5 group-hover:text-accent-foreground" />
                                   </div>
-                                  <ArrowRight className="h-4 w-4 text-zinc-300 transition group-hover:text-zinc-500" />
-                              </div>
-                              <p className="mt-4 text-sm font-medium text-zinc-500">
-                                  {card.label}
-                              </p>
-                              <p className="mt-1 text-2xl font-bold text-zinc-900">
-                                  {card.value}
-                              </p>
-                          </Link>
+                                  <p className="mt-5 text-sm font-medium text-ink-muted">
+                                      {card.label}
+                                  </p>
+                                  <p className="mt-1 text-3xl font-extrabold tracking-tight text-ink">
+                                      {card.value}
+                                  </p>
+                              </Link>
+                          </motion.div>
                       ))}
-            </div>
+            </motion.div>
 
-            <div className="grid gap-4 lg:grid-cols-3">
-                <Link
-                    href="/dashboard/schedule"
-                    className="rounded-2xl border border-zinc-200/60 bg-white p-5 hover:shadow-md transition-shadow"
-                >
-                    <h2 className="font-semibold text-zinc-900">Schedule sessions</h2>
-                    <p className="mt-1 text-sm text-zinc-500">
-                        Create class templates and recurrence rules to expand calendar sessions.
-                    </p>
-                </Link>
-                <Link
-                    href="/dashboard/staff"
-                    className="rounded-2xl border border-zinc-200/60 bg-white p-5 hover:shadow-md transition-shadow"
-                >
-                    <h2 className="font-semibold text-zinc-900">Manage staff</h2>
-                    <p className="mt-1 text-sm text-zinc-500">
-                        Provision trainers and managers with create_staff.
-                    </p>
-                </Link>
-                <Link
-                    href="/dashboard/clients"
-                    className="rounded-2xl border border-zinc-200/60 bg-white p-5 hover:shadow-md transition-shadow"
-                >
-                    <h2 className="font-semibold text-zinc-900">Client list</h2>
-                    <p className="mt-1 text-sm text-zinc-500">
-                        View and manage your clients.
-                    </p>
-                </Link>
-            </div>
-        </div>
+            <motion.div
+                variants={reduce ? undefined : staggerContainer}
+                initial={reduce ? false : 'hidden'}
+                animate={reduce ? undefined : 'show'}
+                className="grid gap-4 lg:grid-cols-3"
+            >
+                {[
+                    {
+                        href: '/dashboard/schedule',
+                        title: 'Schedule sessions',
+                        body: 'Create class templates and recurrence rules to expand calendar sessions.',
+                    },
+                    {
+                        href: '/dashboard/staff',
+                        title: 'Manage staff',
+                        body: 'Provision trainers and managers across your locations.',
+                    },
+                    {
+                        href: '/dashboard/clients',
+                        title: 'Client list',
+                        body: 'View and manage your clients in one place.',
+                    },
+                ].map((action) => (
+                    <motion.div
+                        key={action.href}
+                        variants={reduce ? undefined : staggerItem}
+                        whileHover={
+                            reduce
+                                ? undefined
+                                : { y: -2, transition: { duration: 0.2 } }
+                        }
+                    >
+                        <Link
+                            href={action.href}
+                            className="group relative block overflow-hidden rounded-2xl border border-border bg-card/80 p-5 backdrop-blur-sm transition-colors duration-300 hover:border-primary/30 hover:bg-card hover:shadow-[0_16px_32px_-24px_rgba(11,18,32,0.3)]"
+                        >
+                            <span className="absolute left-0 top-0 h-full w-1 bg-primary/70" />
+                            <h2 className="font-semibold text-ink transition-colors group-hover:text-accent-foreground">
+                                {action.title}
+                            </h2>
+                            <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">
+                                {action.body}
+                            </p>
+                        </Link>
+                    </motion.div>
+                ))}
+            </motion.div>
+        </PageReveal>
     );
 }

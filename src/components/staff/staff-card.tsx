@@ -35,36 +35,36 @@ export function StaffCard({ staff, onEdit, onDelete, onView }: StaffCardProps) {
     const avatarSrc = resolveStaffAvatar(staff.id, staff.avatar);
 
     const avatarGradients: Record<string, string> = {
-        trainer: 'from-violet-500 to-purple-500',
-        manager: 'from-rose-500 to-pink-500',
-        owner: 'from-indigo-500 to-blue-500',
+        trainer: 'bg-ink text-primary',
+        manager: 'bg-[#2a3344] text-primary',
+        owner: 'bg-primary text-primary-foreground',
     };
 
     return (
-        <Card className="group relative overflow-hidden border-zinc-200/60 bg-white transition-all duration-300 hover:border-zinc-300 hover:shadow-lg hover:shadow-zinc-200/50">
+        <Card className="group relative overflow-hidden border-border bg-card transition-all duration-300 hover:border-border hover:shadow-lg hover:shadow-ink/10">
             {/* Subtle gradient accent */}
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 to-indigo-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+            <div className="absolute inset-x-0 top-0 h-1 bg-primary opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
             <CardContent className="p-5">
                 <div className="flex items-start justify-between">
                     {/* Avatar & Info */}
                     <div className="flex gap-4">
                         <ProfileAvatar
-                            className="h-14 w-14 ring-2 ring-zinc-100 transition-transform duration-300 group-hover:scale-105"
+                            className="h-14 w-14 ring-2 ring-border transition-transform duration-300 group-hover:scale-105"
                             src={avatarSrc}
                             alt={`${staff.firstName} ${staff.lastName}`}
                             fallback={initials}
                             fallbackClassName={cn(
-                                'bg-gradient-to-br text-white font-medium',
+                                'font-medium',
                                 avatarGradients[staff.role] || avatarGradients.trainer
                             )}
                         />
 
                         <div className="space-y-1">
-                            <h3 className="font-semibold text-zinc-900">
+                            <h3 className="font-semibold text-ink">
                                 {staff.firstName} {staff.lastName}
                             </h3>
-                            <p className="text-sm text-zinc-500">
+                            <p className="text-sm text-ink-muted">
                                 {staff.role === 'trainer'
                                     ? 'Trainer'
                                     : staff.role === 'manager'
@@ -85,7 +85,7 @@ export function StaffCard({ staff, onEdit, onDelete, onView }: StaffCardProps) {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-zinc-400 hover:text-zinc-600"
+                                className="h-8 w-8 text-ink-muted hover:text-ink-muted"
                             >
                                 <MoreVertical className="h-4 w-4" />
                             </Button>
@@ -112,25 +112,25 @@ export function StaffCard({ staff, onEdit, onDelete, onView }: StaffCardProps) {
                 </div>
 
                 {/* Contact Info */}
-                <div className="mt-4 space-y-2 text-sm text-zinc-600">
+                <div className="mt-4 space-y-2 text-sm text-ink-muted">
                     <div className="flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-zinc-400" />
+                        <Mail className="h-4 w-4 text-ink-muted" />
                         <span className="truncate">{staff.email}</span>
                     </div>
                     {staff.phone && (
                         <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4 text-zinc-400" />
+                            <Phone className="h-4 w-4 text-ink-muted" />
                             <span>{staff.phone}</span>
                         </div>
                     )}
                     {staff.gender ? (
                         <div className="flex items-center gap-2 capitalize">
-                            <User className="h-4 w-4 text-zinc-400" />
+                            <User className="h-4 w-4 text-ink-muted" />
                             <span>{staff.gender.replace(/_/g, ' ')}</span>
                         </div>
                     ) : null}
                     <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-zinc-400" />
+                        <Calendar className="h-4 w-4 text-ink-muted" />
                         <span>Joined {new Date(staff.hireDate).toLocaleDateString('en-US', {
                             month: 'short',
                             year: 'numeric'
@@ -144,7 +144,7 @@ export function StaffCard({ staff, onEdit, onDelete, onView }: StaffCardProps) {
                             <Badge
                                 key={spec}
                                 variant="outline"
-                                className="border-zinc-200 bg-zinc-50 text-xs font-normal text-zinc-600"
+                                className="border-border bg-canvas text-xs font-normal text-ink-muted"
                             >
                                 {spec}
                             </Badge>
@@ -152,7 +152,7 @@ export function StaffCard({ staff, onEdit, onDelete, onView }: StaffCardProps) {
                         {staff.specializations.length > 3 && (
                             <Badge
                                 variant="outline"
-                                className="border-zinc-200 bg-zinc-50 text-xs font-normal text-zinc-500"
+                                className="border-border bg-canvas text-xs font-normal text-ink-muted"
                             >
                                 +{staff.specializations.length - 3} more
                             </Badge>
@@ -167,7 +167,7 @@ export function StaffCard({ staff, onEdit, onDelete, onView }: StaffCardProps) {
 // Skeleton loader for staff card
 export function StaffCardSkeleton() {
     return (
-        <Card className="border-zinc-200/60 bg-white">
+        <Card className="border-border bg-card">
             <CardContent className="p-5">
                 <div className="flex items-start gap-4">
                     <Skeleton className="h-14 w-14 rounded-full" />

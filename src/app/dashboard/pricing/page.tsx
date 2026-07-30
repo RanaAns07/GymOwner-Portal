@@ -14,6 +14,7 @@ import { PricingCard, PricingCardSkeleton } from '@/components/pricing/pricing-c
 import { CreatePricingModal } from '@/components/pricing/create-pricing-modal';
 import { usePricingPlans, useDeletePricingPlan } from '@/hooks/use-pricing';
 import { Plus, CreditCard, Package, TrendingUp, DollarSign, Loader2 } from 'lucide-react';
+import { PageReveal } from '@/components/dashboard/PageReveal';
 import type { PricingPlan } from '@/types/pricing';
 
 export default function PricingPage() {
@@ -73,19 +74,19 @@ export default function PricingPage() {
     };
 
     return (
-        <div className="space-y-6">
+        <PageReveal className="space-y-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
+                    <h1 className="text-2xl font-extrabold tracking-tight text-ink">
                         Pricing Engine
                     </h1>
-                    <p className="mt-1 text-sm text-zinc-500">
+                    <p className="mt-1 text-sm text-ink-muted">
                         Manage membership plans and class packages.
                     </p>
                 </div>
                 <Button
                     onClick={openCreate}
-                    className="gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 shadow-lg shadow-violet-500/25 hover:from-violet-700 hover:to-indigo-700"
+                    className="gap-2 shadow-lg shadow-primary/20"
                 >
                     <Plus className="h-4 w-4" />
                     Create Plan
@@ -93,36 +94,36 @@ export default function PricingPage() {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="rounded-2xl border border-zinc-200/60 bg-white p-5">
+                <div className="rounded-2xl border border-border bg-card p-5">
                     <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-100">
-                            <CreditCard className="h-6 w-6 text-violet-600" />
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15">
+                            <CreditCard className="h-6 w-6 text-accent-foreground" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-zinc-500">Active Plans</p>
-                            <p className="text-2xl font-bold text-zinc-900">{activePlansCount}</p>
+                            <p className="text-sm font-medium text-ink-muted">Active Plans</p>
+                            <p className="text-2xl font-bold text-ink">{activePlansCount}</p>
                         </div>
                     </div>
                 </div>
-                <div className="rounded-2xl border border-zinc-200/60 bg-white p-5">
+                <div className="rounded-2xl border border-border bg-card p-5">
                     <div className="flex items-center gap-4">
                         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100">
                             <Package className="h-6 w-6 text-emerald-600" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-zinc-500">Total Subscribers</p>
-                            <p className="text-2xl font-bold text-zinc-900">{totalSubscribers}</p>
+                            <p className="text-sm font-medium text-ink-muted">Total Subscribers</p>
+                            <p className="text-2xl font-bold text-ink">{totalSubscribers}</p>
                         </div>
                     </div>
                 </div>
-                <div className="rounded-2xl border border-zinc-200/60 bg-white p-5">
+                <div className="rounded-2xl border border-border bg-card p-5">
                     <div className="flex items-center gap-4">
                         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100">
                             <DollarSign className="h-6 w-6 text-blue-600" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-zinc-500">Monthly Revenue</p>
-                            <p className="text-2xl font-bold text-zinc-900">
+                            <p className="text-sm font-medium text-ink-muted">Monthly Revenue</p>
+                            <p className="text-2xl font-bold text-ink">
                                 $
                                 {monthlyRevenue.toLocaleString('en-US', {
                                     minimumFractionDigits: 0,
@@ -131,14 +132,14 @@ export default function PricingPage() {
                         </div>
                     </div>
                 </div>
-                <div className="rounded-2xl border border-zinc-200/60 bg-white p-5">
+                <div className="rounded-2xl border border-border bg-card p-5">
                     <div className="flex items-center gap-4">
                         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100">
                             <TrendingUp className="h-6 w-6 text-amber-600" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-zinc-500">Avg. Plan Value</p>
-                            <p className="text-2xl font-bold text-zinc-900">
+                            <p className="text-sm font-medium text-ink-muted">Avg. Plan Value</p>
+                            <p className="text-2xl font-bold text-ink">
                                 $
                                 {activePlansCount > 0
                                     ? (
@@ -152,9 +153,9 @@ export default function PricingPage() {
                 </div>
             </div>
 
-            <div className="rounded-2xl border border-zinc-200/60 bg-white p-4">
+            <div className="rounded-2xl border border-border bg-card p-4">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <TabsList className="bg-zinc-100">
+                    <TabsList className="bg-canvas">
                         <TabsTrigger value="all">All Active</TabsTrigger>
                         <TabsTrigger value="membership">Memberships</TabsTrigger>
                         <TabsTrigger value="class-pack">Class Packs</TabsTrigger>
@@ -181,17 +182,17 @@ export default function PricingPage() {
                     ))}
                 </div>
             ) : (
-                <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-zinc-50/50 py-16">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-100">
-                        <CreditCard className="h-8 w-8 text-zinc-400" />
+                <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-canvas/50 py-16">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-canvas">
+                        <CreditCard className="h-8 w-8 text-ink-muted" />
                     </div>
-                    <h3 className="mt-4 text-lg font-semibold text-zinc-900">No plans found</h3>
-                    <p className="mt-1 text-sm text-zinc-500">
+                    <h3 className="mt-4 text-lg font-semibold text-ink">No plans found</h3>
+                    <p className="mt-1 text-sm text-ink-muted">
                         Create your first pricing plan to get started.
                     </p>
                     <Button
                         onClick={openCreate}
-                        className="mt-4 bg-gradient-to-r from-violet-600 to-indigo-600"
+                        className="mt-4"
                     >
                         <Plus className="mr-2 h-4 w-4" />
                         Create Plan
@@ -250,6 +251,6 @@ export default function PricingPage() {
                     </div>
                 </DialogContent>
             </Dialog>
-        </div>
+        </PageReveal>
     );
 }

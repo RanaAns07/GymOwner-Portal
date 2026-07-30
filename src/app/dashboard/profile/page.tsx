@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'sonner';
 import { Camera, Loader2, Mail, User } from 'lucide-react';
 import { toDisplayImageUrl } from '@/lib/media-url';
+import { PageReveal } from '@/components/dashboard/PageReveal';
 
 export default function ProfileSettingsPage() {
     const { user, updateUser } = useAuth();
@@ -154,20 +155,20 @@ export default function ProfileSettingsPage() {
     };
 
     return (
-        <div className="space-y-6 max-w-xl">
+        <PageReveal className="space-y-6 max-w-xl">
             <div>
-                <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
+                <h1 className="text-2xl font-extrabold tracking-tight text-ink">
                     Profile Settings
                 </h1>
-                <p className="mt-1 text-sm text-zinc-500">
+                <p className="mt-1 text-sm text-ink-muted">
                     Update your display name and profile photo. Email cannot be changed here.
                 </p>
             </div>
 
-            <Card className="border-zinc-200/80 shadow-sm">
+            <Card className="border-border/80 shadow-sm">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base">
-                        <User className="h-4 w-4 text-violet-600" />
+                        <User className="h-4 w-4 text-accent-foreground" />
                         Your profile
                     </CardTitle>
                     <CardDescription>
@@ -176,7 +177,7 @@ export default function ProfileSettingsPage() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                     {loading ? (
-                        <div className="flex items-center gap-2 text-sm text-zinc-500">
+                        <div className="flex items-center gap-2 text-sm text-ink-muted">
                             <Loader2 className="h-4 w-4 animate-spin" />
                             Loading profile…
                         </div>
@@ -184,7 +185,7 @@ export default function ProfileSettingsPage() {
                         <>
                             <div className="flex items-center gap-4">
                                 <div className="relative">
-                                    <Avatar className="h-20 w-20 ring-2 ring-zinc-200">
+                                    <Avatar className="h-20 w-20 ring-2 ring-border">
                                         {displaySrc && !imgFailed ? (
                                             <AvatarImage
                                                 key={displaySrc}
@@ -194,7 +195,7 @@ export default function ProfileSettingsPage() {
                                                 onError={handleRemoteError}
                                             />
                                         ) : null}
-                                        <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-500 text-lg font-medium text-white">
+                                        <AvatarFallback className="bg-ink text-lg font-medium text-white">
                                             {initials}
                                         </AvatarFallback>
                                     </Avatar>
@@ -216,7 +217,7 @@ export default function ProfileSettingsPage() {
                                         }
                                     />
                                 </div>
-                                <div className="text-sm text-zinc-500">
+                                <div className="text-sm text-ink-muted">
                                     <p className="font-medium text-zinc-800">Profile photo</p>
                                     <p className="mt-0.5">JPG or PNG. Optional.</p>
                                 </div>
@@ -235,16 +236,16 @@ export default function ProfileSettingsPage() {
                             <div className="space-y-2">
                                 <Label htmlFor="email">Email</Label>
                                 <div className="relative">
-                                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
                                     <Input
                                         id="email"
                                         value={email}
                                         readOnly
                                         disabled
-                                        className="bg-zinc-50 pl-9"
+                                        className="bg-canvas pl-9"
                                     />
                                 </div>
-                                <p className="text-xs text-zinc-400">
+                                <p className="text-xs text-ink-muted">
                                     Email and password cannot be edited here.
                                 </p>
                             </div>
@@ -253,7 +254,7 @@ export default function ProfileSettingsPage() {
                                 <Button
                                     onClick={handleSave}
                                     disabled={saving}
-                                    className="bg-gradient-to-r from-violet-600 to-indigo-600"
+
                                 >
                                     {saving ? (
                                         <>
@@ -269,6 +270,6 @@ export default function ProfileSettingsPage() {
                     )}
                 </CardContent>
             </Card>
-        </div>
+        </PageReveal>
     );
 }

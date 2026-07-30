@@ -108,7 +108,7 @@ export function ClientDetailsModal({
                     <div className="flex items-center gap-4">
                         <Avatar className="h-16 w-16">
                             <AvatarImage src={client.avatar} alt={fullName} />
-                            <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-500 text-white text-lg font-medium">
+                            <AvatarFallback className="bg-ink text-primary text-lg font-medium">
                                 {initials}
                             </AvatarFallback>
                         </Avatar>
@@ -249,7 +249,7 @@ export function ClientDetailsModal({
                                         assignPass.isPending ||
                                         !plans?.length
                                     }
-                                    className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700"
+
                                 >
                                     {assignPass.isPending ? (
                                         <Loader2 className="h-4 w-4 animate-spin" />

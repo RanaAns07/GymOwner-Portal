@@ -29,6 +29,7 @@ import {
     Phone,
     Calendar,
 } from 'lucide-react';
+import { PageReveal } from '@/components/dashboard/PageReveal';
 
 export default function ClientsPage() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -67,47 +68,47 @@ export default function ClientsPage() {
     };
 
     return (
-        <div className="space-y-6">
+        <PageReveal className="space-y-6">
             <div>
-                <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
+                <h1 className="text-2xl font-extrabold tracking-tight text-ink">
                     Client Operations
                 </h1>
-                <p className="mt-1 text-sm text-zinc-500">
+                <p className="mt-1 text-sm text-ink-muted">
                     View and manage your clients.
                 </p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <div className="rounded-2xl border border-zinc-200/60 bg-white p-5">
+                <div className="rounded-2xl border border-border bg-card p-5">
                     <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-100">
-                            <Users className="h-6 w-6 text-violet-600" />
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15">
+                            <Users className="h-6 w-6 text-accent-foreground" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-zinc-500">Total Clients</p>
-                            <p className="text-2xl font-bold text-zinc-900">{totalCount}</p>
+                            <p className="text-sm font-medium text-ink-muted">Total Clients</p>
+                            <p className="text-2xl font-bold text-ink">{totalCount}</p>
                         </div>
                     </div>
                 </div>
-                <div className="rounded-2xl border border-zinc-200/60 bg-white p-5">
+                <div className="rounded-2xl border border-border bg-card p-5">
                     <div className="flex items-center gap-4">
                         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100">
                             <UserCheck className="h-6 w-6 text-emerald-600" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-zinc-500">Active</p>
-                            <p className="text-2xl font-bold text-zinc-900">{activeCount}</p>
+                            <p className="text-sm font-medium text-ink-muted">Active</p>
+                            <p className="text-2xl font-bold text-ink">{activeCount}</p>
                         </div>
                     </div>
                 </div>
-                <div className="rounded-2xl border border-zinc-200/60 bg-white p-5">
+                <div className="rounded-2xl border border-border bg-card p-5">
                     <div className="flex items-center gap-4">
                         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100">
                             <Clock className="h-6 w-6 text-amber-600" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-zinc-500">Pending</p>
-                            <p className="text-2xl font-bold text-zinc-900">
+                            <p className="text-sm font-medium text-ink-muted">Pending</p>
+                            <p className="text-2xl font-bold text-ink">
                                 {clients?.filter((c) => c.status === 'pending').length || 0}
                             </p>
                         </div>
@@ -115,9 +116,9 @@ export default function ClientsPage() {
                 </div>
             </div>
 
-            <div className="flex flex-col gap-4 rounded-2xl border border-zinc-200/60 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
                     <Input
                         type="search"
                         placeholder="Search clients..."
@@ -127,7 +128,7 @@ export default function ClientsPage() {
                     />
                 </div>
                 <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-                    <TabsList className="bg-zinc-100">
+                    <TabsList className="bg-canvas">
                         <TabsTrigger value="all">All</TabsTrigger>
                         <TabsTrigger value="active">Active</TabsTrigger>
                         <TabsTrigger value="pending">Pending</TabsTrigger>
@@ -136,10 +137,10 @@ export default function ClientsPage() {
                 </Tabs>
             </div>
 
-            <div className="rounded-2xl border border-zinc-200/60 bg-white overflow-hidden">
+            <div className="rounded-2xl border border-border bg-card overflow-hidden">
                 <Table>
                     <TableHeader>
-                        <TableRow className="bg-zinc-50/50 hover:bg-zinc-50/50">
+                        <TableRow className="bg-canvas/50 hover:bg-canvas/50">
                             <TableHead>Client</TableHead>
                             <TableHead>Contact</TableHead>
                             <TableHead>Membership</TableHead>
@@ -182,22 +183,22 @@ export default function ClientsPage() {
                                 return (
                                     <TableRow
                                         key={client.id}
-                                        className="cursor-pointer transition-colors hover:bg-zinc-50"
+                                        className="cursor-pointer transition-colors hover:bg-canvas"
                                         onClick={() => openDetails(client)}
                                     >
                                         <TableCell>
                                             <div className="flex items-center gap-3">
                                                 <Avatar className="h-10 w-10">
                                                     <AvatarImage src={client.avatar} />
-                                                    <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-500 text-white text-sm font-medium">
+                                                    <AvatarFallback className="bg-ink text-primary text-sm font-medium">
                                                         {initials}
                                                     </AvatarFallback>
                                                 </Avatar>
                                                 <div>
-                                                    <p className="font-medium text-zinc-900">
+                                                    <p className="font-medium text-ink">
                                                         {client.firstName} {client.lastName}
                                                     </p>
-                                                    <p className="text-xs text-zinc-500">
+                                                    <p className="text-xs text-ink-muted">
                                                         <Calendar className="inline h-3 w-3 mr-1" />
                                                         Joined{' '}
                                                         {new Date(
@@ -212,14 +213,14 @@ export default function ClientsPage() {
                                         </TableCell>
                                         <TableCell>
                                             <div className="space-y-1 text-sm">
-                                                <div className="flex items-center gap-1.5 text-zinc-600">
+                                                <div className="flex items-center gap-1.5 text-ink-muted">
                                                     <Mail className="h-3.5 w-3.5" />
                                                     <span className="truncate max-w-[180px]">
                                                         {client.email}
                                                     </span>
                                                 </div>
                                                 {client.phone && (
-                                                    <div className="flex items-center gap-1.5 text-zinc-500">
+                                                    <div className="flex items-center gap-1.5 text-ink-muted">
                                                         <Phone className="h-3.5 w-3.5" />
                                                         <span>{client.phone}</span>
                                                     </div>
@@ -232,7 +233,7 @@ export default function ClientsPage() {
                                                     {client.membershipName}
                                                 </Badge>
                                             ) : (
-                                                <span className="text-sm text-zinc-400">None</span>
+                                                <span className="text-sm text-ink-muted">None</span>
                                             )}
                                         </TableCell>
                                         <TableCell>
@@ -245,7 +246,7 @@ export default function ClientsPage() {
                                         </TableCell>
                                         <TableCell>
                                             {client.lastVisit ? (
-                                                <span className="text-sm text-zinc-600">
+                                                <span className="text-sm text-ink-muted">
                                                     {new Date(
                                                         client.lastVisit
                                                     ).toLocaleDateString('en-US', {
@@ -254,7 +255,7 @@ export default function ClientsPage() {
                                                     })}
                                                 </span>
                                             ) : (
-                                                <span className="text-sm text-zinc-400">Never</span>
+                                                <span className="text-sm text-ink-muted">Never</span>
                                             )}
                                         </TableCell>
                                     </TableRow>
@@ -264,8 +265,8 @@ export default function ClientsPage() {
                             <TableRow>
                                 <TableCell colSpan={5} className="h-32 text-center">
                                     <div className="flex flex-col items-center justify-center">
-                                        <UserX className="h-8 w-8 text-zinc-300" />
-                                        <p className="mt-2 text-sm text-zinc-500">
+                                        <UserX className="h-8 w-8 text-border" />
+                                        <p className="mt-2 text-sm text-ink-muted">
                                             No clients found
                                         </p>
                                     </div>
@@ -281,6 +282,6 @@ export default function ClientsPage() {
                 onOpenChange={setDetailsOpen}
                 client={selectedClient}
             />
-        </div>
+        </PageReveal>
     );
 }

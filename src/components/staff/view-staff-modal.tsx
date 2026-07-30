@@ -82,7 +82,7 @@ export function ViewStaffModal({
                                 alt={fullName}
                                 referrerPolicy="no-referrer"
                             />
-                            <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-500 text-white text-lg font-medium">
+                            <AvatarFallback className="bg-ink text-primary text-lg font-medium">
                                 {initials}
                             </AvatarFallback>
                         </Avatar>
@@ -138,7 +138,7 @@ export function ViewStaffModal({
                                     <Badge
                                         key={assignment.id}
                                         variant="outline"
-                                        className="gap-1.5 border-violet-200 bg-violet-50 text-violet-700"
+                                        className="gap-1.5 border-primary/30 bg-primary/10 text-accent-foreground"
                                     >
                                         <MapPin className="h-3 w-3" />
                                         {assignment.location_name ||
@@ -162,7 +162,7 @@ export function ViewStaffModal({
                                     onOpenChange(false);
                                     onEdit(staff);
                                 }}
-                                className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700"
+
                             >
                                 Edit
                             </Button>

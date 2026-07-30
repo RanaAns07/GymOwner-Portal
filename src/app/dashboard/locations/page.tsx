@@ -43,6 +43,7 @@ import {
     Clock,
     Loader2,
 } from 'lucide-react';
+import { PageReveal } from '@/components/dashboard/PageReveal';
 
 export default function LocationsPage() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -84,19 +85,19 @@ export default function LocationsPage() {
     };
 
     return (
-        <div className="space-y-6">
+        <PageReveal className="space-y-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
+                    <h1 className="text-2xl font-extrabold tracking-tight text-ink">
                         Locations
                     </h1>
-                    <p className="mt-1 text-sm text-zinc-500">
+                    <p className="mt-1 text-sm text-ink-muted">
                         Manage gym locations used for scheduling and staff assignment.
                     </p>
                 </div>
                 <Button
                     onClick={openCreate}
-                    className="gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 shadow-lg shadow-violet-500/25 hover:from-violet-700 hover:to-indigo-700"
+                    className="gap-2 shadow-lg shadow-primary/20"
                 >
                     <Plus className="h-4 w-4" />
                     Add Location
@@ -104,14 +105,14 @@ export default function LocationsPage() {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <div className="rounded-2xl border border-zinc-200/60 bg-white p-5">
+                <div className="rounded-2xl border border-border bg-card p-5">
                     <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-100">
-                            <MapPin className="h-6 w-6 text-violet-600" />
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15">
+                            <MapPin className="h-6 w-6 text-accent-foreground" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-zinc-500">Total locations</p>
-                            <p className="text-2xl font-bold text-zinc-900">
+                            <p className="text-sm font-medium text-ink-muted">Total locations</p>
+                            <p className="text-2xl font-bold text-ink">
                                 {locations?.length ?? 0}
                             </p>
                         </div>
@@ -119,9 +120,9 @@ export default function LocationsPage() {
                 </div>
             </div>
 
-            <div className="rounded-2xl border border-zinc-200/60 bg-white p-4">
+            <div className="rounded-2xl border border-border bg-card p-4">
                 <div className="relative max-w-sm">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
                     <Input
                         type="search"
                         placeholder="Search locations..."
@@ -132,10 +133,10 @@ export default function LocationsPage() {
                 </div>
             </div>
 
-            <div className="rounded-2xl border border-zinc-200/60 bg-white overflow-hidden">
+            <div className="rounded-2xl border border-border bg-card overflow-hidden">
                 <Table>
                     <TableHeader>
-                        <TableRow className="bg-zinc-50/50 hover:bg-zinc-50/50">
+                        <TableRow className="bg-canvas/50 hover:bg-canvas/50">
                             <TableHead>Name</TableHead>
                             <TableHead>Address</TableHead>
                             <TableHead>Timezone</TableHead>
@@ -158,24 +159,24 @@ export default function LocationsPage() {
                             filtered.map((location) => (
                                 <TableRow key={location.id}>
                                     <TableCell>
-                                        <div className="flex items-center gap-2 font-medium text-zinc-900">
-                                            <MapPin className="h-4 w-4 text-violet-500" />
+                                        <div className="flex items-center gap-2 font-medium text-ink">
+                                            <MapPin className="h-4 w-4 text-accent-foreground" />
                                             {location.name}
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-sm text-zinc-600">
+                                    <TableCell className="text-sm text-ink-muted">
                                         {location.address || '—'}
                                     </TableCell>
-                                    <TableCell className="text-sm text-zinc-600">
+                                    <TableCell className="text-sm text-ink-muted">
                                         <span className="inline-flex items-center gap-1.5">
-                                            <Clock className="h-3.5 w-3.5 text-zinc-400" />
+                                            <Clock className="h-3.5 w-3.5 text-ink-muted" />
                                             {location.timezone || '—'}
                                         </span>
                                     </TableCell>
-                                    <TableCell className="text-sm text-zinc-600">
+                                    <TableCell className="text-sm text-ink-muted">
                                         {location.phone ? (
                                             <span className="inline-flex items-center gap-1.5">
-                                                <Phone className="h-3.5 w-3.5 text-zinc-400" />
+                                                <Phone className="h-3.5 w-3.5 text-ink-muted" />
                                                 {location.phone}
                                             </span>
                                         ) : (
@@ -188,7 +189,7 @@ export default function LocationsPage() {
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-8 w-8 text-zinc-400"
+                                                    className="h-8 w-8 text-ink-muted"
                                                 >
                                                     <MoreVertical className="h-4 w-4" />
                                                 </Button>
@@ -215,13 +216,13 @@ export default function LocationsPage() {
                             <TableRow>
                                 <TableCell colSpan={5} className="h-32 text-center">
                                     <div className="flex flex-col items-center justify-center">
-                                        <MapPin className="h-8 w-8 text-zinc-300" />
-                                        <p className="mt-2 text-sm text-zinc-500">
+                                        <MapPin className="h-8 w-8 text-border" />
+                                        <p className="mt-2 text-sm text-ink-muted">
                                             No locations yet
                                         </p>
                                         <Button
                                             variant="link"
-                                            className="mt-1 text-violet-600"
+                                            className="mt-1 text-accent-foreground"
                                             onClick={openCreate}
                                         >
                                             Add your first location
@@ -285,6 +286,6 @@ export default function LocationsPage() {
                     </div>
                 </DialogContent>
             </Dialog>
-        </div>
+        </PageReveal>
     );
 }

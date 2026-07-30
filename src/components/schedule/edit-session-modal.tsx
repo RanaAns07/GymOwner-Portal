@@ -300,7 +300,7 @@ export function EditSessionModal({
                             <Button
                                 type="submit"
                                 disabled={isLoading}
-                                className="bg-gradient-to-r from-violet-600 to-indigo-600"
+
                             >
                                 {updateSession.isPending ? (
                                     <>

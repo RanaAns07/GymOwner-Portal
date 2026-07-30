@@ -20,10 +20,10 @@ function BouncingDumbbell({ startX, startY, velocityX, velocityY, rotationSpeed 
 
     const [isDark, setIsDark] = useState(true);
 
-    // Black and hot pink (#fa60f5) toggle
-    const ironColor = isDark ? "#111827" : "#fa60f5";
-    const weightColor = isDark ? "#030712" : "#fa60f5";
-    const emissive = isDark ? "#000000" : "#fa60f5";
+    // Black and primary (#a8dd07) toggle
+    const ironColor = isDark ? "#111827" : "#a8dd07";
+    const weightColor = isDark ? "#030712" : "#a8dd07";
+    const emissive = isDark ? "#000000" : "#a8dd07";
     const emissiveIntensity = isDark ? 0 : 0.4;
 
     const bounds = { x: 8, y: 5, z: 3 };
@@ -145,7 +145,7 @@ export default function MovingDumbbell() {
                 <ambientLight intensity={0.8} />
                 <directionalLight position={[5, 10, 5]} intensity={1.2} color="#ffffff" />
                 <pointLight position={[10, 10, 10]} intensity={1} color="#ffffff" />
-                <pointLight position={[-10, -10, -5]} intensity={0.8} color="#fa60f5" />
+                <pointLight position={[-10, -10, -5]} intensity={0.8} color="#a8dd07" />
 
                 <BouncingDumbbell
                     startX={-4}

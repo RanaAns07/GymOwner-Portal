@@ -48,7 +48,7 @@ function StaffListView({
     onView,
 }: Omit<StaffGridProps, 'isLoading' | 'viewMode'>) {
     return (
-        <div className="rounded-2xl border border-zinc-200/60 bg-white overflow-hidden">
+        <div className="rounded-2xl border border-zinc-200/60 bg-card overflow-hidden">
             <Table>
                 <TableHeader>
                     <TableRow className="bg-zinc-50/50 hover:bg-zinc-50/50">
@@ -74,7 +74,7 @@ function StaffListView({
                                                 )}
                                                 referrerPolicy="no-referrer"
                                             />
-                                            <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-500 text-white text-xs font-medium">
+                                            <AvatarFallback className="bg-ink text-primary text-xs font-medium">
                                                 {getInitials(member)}
                                             </AvatarFallback>
                                         </Avatar>
@@ -154,7 +154,7 @@ export function StaffGrid({
     if (isLoading) {
         if (viewMode === 'list') {
             return (
-                <div className="rounded-2xl border border-zinc-200/60 bg-white p-6 space-y-3">
+                <div className="rounded-2xl border border-zinc-200/60 bg-card p-6 space-y-3">
                     {Array.from({ length: 5 }).map((_, i) => (
                         <div key={i} className="h-12 rounded-lg bg-zinc-100 animate-pulse" />
                     ))}

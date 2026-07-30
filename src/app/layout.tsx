@@ -1,13 +1,17 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import { QueryProvider } from '@/providers/query-provider';
 import { AuthProvider } from '@/providers/auth-context';
+import { ThemeProvider } from '@/providers/theme-provider';
+import { BrandThemeRoot } from '@/components/dashboard/BrandThemeRoot';
 import { Toaster } from 'sonner';
 
-const inter = Inter({
+const plusJakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-plus-jakarta',
+  display: 'swap',
+  weight: ['400', '500', '600', '700', '800'],
 });
 
 export const metadata: Metadata = {
@@ -21,24 +25,33 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
-      <body className={`${inter.variable} font-sans antialiased h-full bg-zinc-50`} suppressHydrationWarning>
-        <QueryProvider>
-          <AuthProvider>
-            {children}
-          </AuthProvider>
-          <Toaster
-            position="top-right"
-            richColors
-            closeButton
-            toastOptions={{
-              duration: 4000,
-              className: 'text-sm',
-            }}
-          />
-        </QueryProvider>
+    <html lang="en" className="h-full" suppressHydrationWarning>
+      <body
+        className={`${plusJakarta.variable} font-sans antialiased h-full bg-canvas text-foreground`}
+        suppressHydrationWarning
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <QueryProvider>
+            <AuthProvider>
+              <BrandThemeRoot>{children}</BrandThemeRoot>
+            </AuthProvider>
+            <Toaster
+              position="top-right"
+              richColors
+              closeButton
+              toastOptions={{
+                duration: 4000,
+                className: 'text-sm',
+              }}
+            />
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
 }
-

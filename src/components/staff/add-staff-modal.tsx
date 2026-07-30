@@ -180,7 +180,7 @@ export function AddStaffModal({ open, onOpenChange }: AddStaffModalProps) {
                         <Button
                             type="submit"
                             disabled={createStaff.isPending}
-                            className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700"
+
                         >
                             {createStaff.isPending ? (
                                 <>

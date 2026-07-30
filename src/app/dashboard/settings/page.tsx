@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Building2, Mail, Shield, User } from 'lucide-react';
+import { PageReveal } from '@/components/dashboard/PageReveal';
+import { ThemeToggle } from '@/components/layout/theme-toggle';
 
 export default function SettingsPage() {
     const { user, branding } = useAuth();
@@ -22,19 +24,19 @@ export default function SettingsPage() {
                 : user?.role || 'User';
 
     return (
-        <div className="space-y-6">
+        <PageReveal className="space-y-6">
             <div>
-                <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Settings</h1>
-                <p className="text-sm text-zinc-500 mt-1">
+                <h1 className="text-2xl font-extrabold tracking-tight text-ink">Settings</h1>
+                <p className="text-sm text-ink-muted mt-1">
                     Manage your account and gym preferences.
                 </p>
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
-                <Card className="border-zinc-200/80 shadow-sm">
+                <Card className="border-border/80 shadow-sm">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-base">
-                            <User className="h-4 w-4 text-violet-600" />
+                            <User className="h-4 w-4 text-accent-foreground" />
                             Account
                         </CardTitle>
                         <CardDescription>
@@ -48,35 +50,35 @@ export default function SettingsPage() {
                                 id="nickname"
                                 value={user?.nickname || ''}
                                 readOnly
-                                className="bg-zinc-50"
+                                className="bg-canvas"
                             />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="email">Email</Label>
                             <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
                                 <Input
                                     id="email"
                                     value={user?.email || ''}
                                     readOnly
-                                    className="bg-zinc-50 pl-9"
+                                    className="bg-canvas pl-9"
                                 />
                             </div>
                         </div>
                         <div className="flex items-center gap-2 pt-1">
-                            <Shield className="h-4 w-4 text-zinc-400" />
-                            <span className="text-sm text-zinc-600">Role</span>
-                            <Badge variant="secondary" className="bg-violet-50 text-violet-700 hover:bg-violet-50">
+                            <Shield className="h-4 w-4 text-ink-muted" />
+                            <span className="text-sm text-ink-muted">Role</span>
+                            <Badge variant="secondary" className="bg-primary/10 text-accent-foreground hover:bg-primary/10">
                                 {roleLabel}
                             </Badge>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="border-zinc-200/80 shadow-sm">
+                <Card className="border-border/80 shadow-sm">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-base">
-                            <Building2 className="h-4 w-4 text-violet-600" />
+                            <Building2 className="h-4 w-4 text-accent-foreground" />
                             Gym / Tenant
                         </CardTitle>
                         <CardDescription>
@@ -90,7 +92,7 @@ export default function SettingsPage() {
                                 id="tenant"
                                 value={user?.tenant_subdomain || '—'}
                                 readOnly
-                                className="bg-zinc-50"
+                                className="bg-canvas"
                             />
                         </div>
                         <div className="space-y-2">
@@ -99,38 +101,64 @@ export default function SettingsPage() {
                                 id="tenant-id"
                                 value={user?.tenant_id || '—'}
                                 readOnly
-                                className="bg-zinc-50 font-mono text-xs"
+                                className="bg-canvas font-mono text-xs"
                             />
                         </div>
                         {branding?.primary_color && (
-                            <div className="flex items-center gap-3 pt-1">
-                                <span className="text-sm text-zinc-600">Brand color</span>
-                                <span
-                                    className="h-6 w-6 rounded-full border border-zinc-200"
-                                    style={{ backgroundColor: branding.primary_color }}
-                                />
-                                <span className="text-xs text-zinc-500 font-mono">
-                                    {branding.primary_color}
-                                </span>
+                            <div className="space-y-2 pt-1">
+                                <span className="text-sm text-ink-muted">Brand colors</span>
+                                <div className="flex flex-wrap items-center gap-4">
+                                    <div className="flex items-center gap-2">
+                                        <span
+                                            className="h-6 w-6 rounded-full border border-border"
+                                            style={{ backgroundColor: branding.primary_color }}
+                                        />
+                                        <span className="text-xs text-ink-muted font-mono">
+                                            Primary {branding.primary_color}
+                                        </span>
+                                    </div>
+                                    {branding.secondary_color && (
+                                        <div className="flex items-center gap-2">
+                                            <span
+                                                className="h-6 w-6 rounded-full border border-border"
+                                                style={{
+                                                    backgroundColor: branding.secondary_color,
+                                                }}
+                                            />
+                                            <span className="text-xs text-ink-muted font-mono">
+                                                Secondary {branding.secondary_color}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         )}
                     </CardContent>
                 </Card>
             </div>
 
-            <Card className="border-zinc-200/80 shadow-sm">
+            <Card className="border-border/80 shadow-sm">
                 <CardHeader>
                     <CardTitle className="text-base">Preferences</CardTitle>
                     <CardDescription>
-                        More settings will be available here soon.
+                        Appearance and notification preferences for this portal.
                     </CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <Separator className="mb-4" />
+                <CardContent className="space-y-5">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <p className="text-sm font-medium text-zinc-900">Notifications</p>
-                            <p className="text-sm text-zinc-500">
+                            <p className="text-sm font-medium text-ink">Appearance</p>
+                            <p className="text-sm text-ink-muted">
+                                Switch between light, dark, or system theme.
+                            </p>
+                        </div>
+                        <ThemeToggle compact={false} />
+                    </div>
+                    <Separator />
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-ink">Notifications</p>
+                            <p className="text-sm text-ink-muted">
                                 Email alerts for schedule and membership changes.
                             </p>
                         </div>
@@ -140,6 +168,6 @@ export default function SettingsPage() {
                     </div>
                 </CardContent>
             </Card>
-        </div>
+        </PageReveal>
     );
 }

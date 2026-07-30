@@ -20,6 +20,7 @@ import { useStaffMembers, useDeleteStaffMember } from '@/hooks/use-staff';
 import type { StaffMember } from '@/types/staff';
 import { statusConfig } from '@/types/staff';
 import { Plus, Search, LayoutGrid, List, Filter, Users } from 'lucide-react';
+import { PageReveal } from '@/components/dashboard/PageReveal';
 
 /** Roles returned/created by the staff API */
 const ROLE_FILTER_OPTIONS = [
@@ -92,18 +93,18 @@ export default function StaffPage() {
     const totalCount = staff?.length || 0;
 
     return (
-        <div className="space-y-6">
+        <PageReveal className="space-y-6">
             {/* Page Header */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Staff Management</h1>
-                    <p className="mt-1 text-sm text-zinc-500">
+                    <h1 className="text-2xl font-extrabold tracking-tight text-ink">Staff Management</h1>
+                    <p className="mt-1 text-sm text-ink-muted">
                         Manage your team members and their roles.
                     </p>
                 </div>
                 <Button
                     onClick={() => setIsAddModalOpen(true)}
-                    className="gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 shadow-lg shadow-violet-500/25 hover:from-violet-700 hover:to-indigo-700"
+                    className="gap-2 shadow-lg shadow-primary/20"
                 >
                     <Plus className="h-4 w-4" />
                     Add Staff
@@ -112,49 +113,49 @@ export default function StaffPage() {
 
             {/* Stats Cards */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="rounded-2xl border border-zinc-200/60 bg-white p-5">
+                <div className="rounded-2xl border border-border bg-card p-5">
                     <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-100">
-                            <Users className="h-6 w-6 text-violet-600" />
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15">
+                            <Users className="h-6 w-6 text-accent-foreground" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-zinc-500">Total Staff</p>
-                            <p className="text-2xl font-bold text-zinc-900">{totalCount}</p>
+                            <p className="text-sm font-medium text-ink-muted">Total Staff</p>
+                            <p className="text-2xl font-bold text-ink">{totalCount}</p>
                         </div>
                     </div>
                 </div>
-                <div className="rounded-2xl border border-zinc-200/60 bg-white p-5">
+                <div className="rounded-2xl border border-border bg-card p-5">
                     <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100">
-                            <Users className="h-6 w-6 text-emerald-600" />
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15">
+                            <Users className="h-6 w-6 text-accent-foreground" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-zinc-500">Active</p>
-                            <p className="text-2xl font-bold text-zinc-900">{activeCount}</p>
+                            <p className="text-sm font-medium text-ink-muted">Active</p>
+                            <p className="text-2xl font-bold text-ink">{activeCount}</p>
                         </div>
                     </div>
                 </div>
-                <div className="rounded-2xl border border-zinc-200/60 bg-white p-5">
+                <div className="rounded-2xl border border-border bg-card p-5">
                     <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100">
-                            <Users className="h-6 w-6 text-amber-600" />
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-canvas">
+                            <Users className="h-6 w-6 text-ink-muted" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-zinc-500">On Leave</p>
-                            <p className="text-2xl font-bold text-zinc-900">
+                            <p className="text-sm font-medium text-ink-muted">On Leave</p>
+                            <p className="text-2xl font-bold text-ink">
                                 {staff?.filter((s) => s.status === 'on-leave').length || 0}
                             </p>
                         </div>
                     </div>
                 </div>
-                <div className="rounded-2xl border border-zinc-200/60 bg-white p-5">
+                <div className="rounded-2xl border border-border bg-card p-5">
                     <div className="flex items-center gap-4">
                         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100">
                             <Users className="h-6 w-6 text-blue-600" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-zinc-500">Trainers</p>
-                            <p className="text-2xl font-bold text-zinc-900">
+                            <p className="text-sm font-medium text-ink-muted">Trainers</p>
+                            <p className="text-2xl font-bold text-ink">
                                 {staff?.filter((s) => s.role === 'trainer').length || 0}
                             </p>
                         </div>
@@ -163,11 +164,11 @@ export default function StaffPage() {
             </div>
 
             {/* Filters & Search */}
-            <div className="flex flex-col gap-4 rounded-2xl border border-zinc-200/60 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex flex-1 items-center gap-3">
                     {/* Search */}
                     <div className="relative flex-1 max-w-sm">
-                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
                         <Input
                             type="search"
                             placeholder="Search staff..."
@@ -211,7 +212,7 @@ export default function StaffPage() {
 
                 {/* View Toggle */}
                 <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'grid' | 'list')}>
-                    <TabsList className="bg-zinc-100">
+                    <TabsList className="bg-canvas">
                         <TabsTrigger value="grid" className="gap-1.5">
                             <LayoutGrid className="h-4 w-4" />
                             Grid
@@ -258,6 +259,6 @@ export default function StaffPage() {
                 isRemoving={deleteStaff.isPending}
                 onConfirm={handleConfirmRemove}
             />
-        </div>
+        </PageReveal>
     );
 }

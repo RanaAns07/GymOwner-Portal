@@ -31,13 +31,13 @@ export function PricingCard({ plan, onEdit, onArchive, onDelete, featured }: Pri
     return (
         <Card
             className={cn(
-                "relative flex flex-col overflow-hidden border-zinc-200/60 bg-white transition-all duration-300 hover:shadow-lg",
-                featured && "border-violet-200 ring-2 ring-violet-500/20"
+                "relative flex flex-col overflow-hidden border-border bg-card transition-all duration-300 hover:shadow-lg",
+                featured && "border-primary/30 ring-2 ring-primary/25"
             )}
         >
             {/* Popular Badge */}
             {isPopular && (
-                <div className="absolute right-4 top-4 flex items-center gap-1 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 px-3 py-1 text-xs font-medium text-white shadow-lg shadow-violet-500/25">
+                <div className="absolute right-4 top-4 flex items-center gap-1 rounded-full bg-primary text-primary-foreground px-3 py-1 text-xs font-medium shadow-lg shadow-primary/20">
                     <Sparkles className="h-3 w-3" />
                     Popular
                 </div>
@@ -54,20 +54,20 @@ export function PricingCard({ plan, onEdit, onArchive, onDelete, featured }: Pri
                                 {status.label}
                             </Badge>
                         </div>
-                        <h3 className="text-xl font-bold text-zinc-900">{plan.name}</h3>
+                        <h3 className="text-xl font-bold text-ink">{plan.name}</h3>
                         {plan.locationName && (
-                            <p className="mt-1 flex items-center gap-1 text-xs text-zinc-500">
+                            <p className="mt-1 flex items-center gap-1 text-xs text-ink-muted">
                                 <MapPin className="h-3 w-3 shrink-0" />
                                 <span className="truncate">{plan.locationName}</span>
                             </p>
                         )}
-                        <p className="mt-1 text-sm text-zinc-500">{plan.description}</p>
+                        <p className="mt-1 text-sm text-ink-muted">{plan.description}</p>
                     </div>
 
                     {/* Actions */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-400">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-ink-muted">
                                 <MoreVertical className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
@@ -97,14 +97,14 @@ export function PricingCard({ plan, onEdit, onArchive, onDelete, featured }: Pri
                 {/* Price */}
                 <div className="mt-4">
                     <div className="flex items-baseline gap-1">
-                        <span className="text-4xl font-bold tracking-tight text-zinc-900">
+                        <span className="text-4xl font-bold tracking-tight text-ink">
                             ${Number(plan.price || 0).toFixed(2)}
                         </span>
-                        <span className="text-sm font-medium text-zinc-500">
+                        <span className="text-sm font-medium text-ink-muted">
                             /{billingCycleLabels[plan.billingCycle].toLowerCase()}
                         </span>
                     </div>
-                    <p className="mt-1 text-sm text-zinc-500">
+                    <p className="mt-1 text-sm text-ink-muted">
                         {plan.type === 'class-pack' && plan.maxClasses
                             ? `${plan.maxClasses} credits · ${plan.validityDays || 30} days`
                             : `Valid for ${plan.validityDays || 30} days`}
@@ -120,15 +120,15 @@ export function PricingCard({ plan, onEdit, onArchive, onDelete, featured }: Pri
                             <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100">
                                 <Check className="h-3 w-3 text-emerald-600" />
                             </div>
-                            <span className="text-sm text-zinc-600">{feature}</span>
+                            <span className="text-sm text-ink-muted">{feature}</span>
                         </li>
                     ))}
                 </ul>
             </CardContent>
 
-            <CardFooter className="border-t border-zinc-100 bg-zinc-50/50 px-6 py-4">
+            <CardFooter className="border-t border-zinc-100 bg-canvas/50 px-6 py-4">
                 <div className="flex w-full items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm text-zinc-500">
+                    <div className="flex items-center gap-2 text-sm text-ink-muted">
                         <Users className="h-4 w-4" />
                         <span>{plan.subscriberCount ?? plan.subscribers ?? 0} subscribers</span>
                     </div>
@@ -148,7 +148,7 @@ export function PricingCard({ plan, onEdit, onArchive, onDelete, featured }: Pri
 
 export function PricingCardSkeleton() {
     return (
-        <Card className="border-zinc-200/60 bg-white">
+        <Card className="border-border bg-card">
             <CardHeader className="pb-4">
                 <div className="flex gap-2 mb-2">
                     <Skeleton className="h-5 w-20" />
@@ -170,7 +170,7 @@ export function PricingCardSkeleton() {
                     ))}
                 </div>
             </CardContent>
-            <CardFooter className="border-t border-zinc-100 bg-zinc-50/50 px-6 py-4">
+            <CardFooter className="border-t border-zinc-100 bg-canvas/50 px-6 py-4">
                 <Skeleton className="h-4 w-24" />
             </CardFooter>
         </Card>

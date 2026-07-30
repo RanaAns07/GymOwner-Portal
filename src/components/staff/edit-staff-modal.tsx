@@ -228,7 +228,7 @@ export function EditStaffModal({ open, onOpenChange, staff }: EditStaffModalProp
                                     alt={staff ? `${staff.firstName} ${staff.lastName}` : 'Staff'}
                                     referrerPolicy="no-referrer"
                                 />
-                                <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-500 text-sm font-medium text-white">
+                                <AvatarFallback className="bg-ink text-sm font-medium text-white">
                                     {initials}
                                 </AvatarFallback>
                             </Avatar>
@@ -348,7 +348,7 @@ export function EditStaffModal({ open, onOpenChange, staff }: EditStaffModalProp
                                             <Badge
                                                 key={assignment.id}
                                                 variant="outline"
-                                                className="gap-1.5 border-violet-200 bg-violet-50 text-violet-700 pr-1"
+                                                className="gap-1.5 border-primary/30 bg-primary/10 text-accent-foreground pr-1"
                                             >
                                                 <MapPin className="h-3 w-3" />
                                                 {assignment.location_name ||
@@ -356,7 +356,7 @@ export function EditStaffModal({ open, onOpenChange, staff }: EditStaffModalProp
                                                     'Location'}
                                                 <button
                                                     type="button"
-                                                    className="rounded-full p-0.5 hover:bg-violet-100"
+                                                    className="rounded-full p-0.5 hover:bg-primary/15"
                                                     disabled={removeLocation.isPending}
                                                     onClick={() =>
                                                         handleRemoveLocation(assignment.id)
@@ -427,7 +427,7 @@ export function EditStaffModal({ open, onOpenChange, staff }: EditStaffModalProp
                         <Button
                             type="submit"
                             disabled={isBusy || !staff}
-                            className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700"
+
                         >
                             {isBusy ? (
                                 <>

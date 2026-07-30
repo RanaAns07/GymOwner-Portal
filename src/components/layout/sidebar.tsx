@@ -19,14 +19,13 @@ import {
     Dumbbell,
     LayoutDashboard,
     Settings,
-    // HelpCircle,
     MapPin,
 } from 'lucide-react';
 
 interface NavItem {
     title: string;
     href: string;
-    icon: React.ComponentType<any>;
+    icon: React.ComponentType<{ className?: string }>;
     badge?: string;
 }
 
@@ -69,11 +68,6 @@ const secondaryNavItems: NavItem[] = [
         href: '/dashboard/settings',
         icon: Settings,
     },
-    // {
-    //     title: 'Help & Support',
-    //     href: '/dashboard/help',
-    //     icon: HelpCircle,
-    // },
 ];
 
 interface SidebarProps {
@@ -86,18 +80,19 @@ function SidebarContent({ collapsed, onCollapse }: SidebarProps) {
 
     return (
         <div className="flex h-full flex-col">
-            {/* Logo */}
-            <div className={cn(
-                "flex h-16 items-center border-b border-zinc-200/60 px-4",
-                collapsed ? "justify-center" : "justify-between"
-            )}>
+            <div
+                className={cn(
+                    'flex h-16 items-center border-b border-border px-4',
+                    collapsed ? 'justify-center' : 'justify-between'
+                )}
+            >
                 <Link href="/dashboard" className="flex items-center gap-2.5">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 shadow-lg shadow-violet-500/25">
-                        <Dumbbell className="h-5 w-5 text-white" />
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0b1220] text-primary shadow-lg shadow-black/20 dark:bg-primary dark:text-primary-foreground">
+                        <Dumbbell className="h-5 w-5" />
                     </div>
                     {!collapsed && (
-                        <span className="text-lg font-bold tracking-tight text-zinc-900">
-                            GymFlow
+                        <span className="text-lg font-bold tracking-tight text-ink">
+                            Gym<span className="text-primary">Flow</span>
                         </span>
                     )}
                 </Link>
@@ -105,7 +100,7 @@ function SidebarContent({ collapsed, onCollapse }: SidebarProps) {
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-zinc-500 hover:text-zinc-900"
+                        className="h-8 w-8 text-ink-muted hover:text-ink"
                         onClick={() => onCollapse(true)}
                     >
                         <ChevronLeft className="h-4 w-4" />
@@ -113,36 +108,40 @@ function SidebarContent({ collapsed, onCollapse }: SidebarProps) {
                 )}
             </div>
 
-            {/* Navigation */}
             <ScrollArea className="flex-1 py-4">
                 <nav className="space-y-1 px-3">
                     {mainNavItems.map((item) => {
-                        const isActive = pathname === item.href ||
-                            (item.href !== '/dashboard' && pathname.startsWith(item.href));
+                        const isActive =
+                            pathname === item.href ||
+                            (item.href !== '/dashboard' &&
+                                pathname.startsWith(item.href));
 
                         return (
                             <Link
                                 key={item.href}
                                 href={item.href}
                                 className={cn(
-                                    "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                                    'group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
                                     isActive
-                                        ? "bg-gradient-to-r from-violet-500/10 to-indigo-500/10 text-violet-700"
-                                        : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900",
-                                    collapsed && "justify-center px-2"
+                                        ? 'bg-primary/15 text-accent-foreground'
+                                        : 'text-ink-muted hover:bg-canvas hover:text-ink',
+                                    collapsed && 'justify-center px-2'
                                 )}
                             >
+                                {isActive && (
+                                    <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-primary" />
+                                )}
                                 <item.icon
                                     className={cn(
-                                        "h-5 w-5 flex-shrink-0 transition-colors",
+                                        'h-5 w-5 flex-shrink-0 transition-colors',
                                         isActive
-                                            ? "text-violet-600"
-                                            : "text-zinc-500 group-hover:text-zinc-700"
+                                            ? 'text-accent-foreground'
+                                            : 'text-ink-muted group-hover:text-ink'
                                     )}
                                 />
                                 {!collapsed && <span>{item.title}</span>}
                                 {!collapsed && item.badge && (
-                                    <span className="ml-auto rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-700">
+                                    <span className="ml-auto rounded-full bg-primary/15 px-2 py-0.5 text-xs font-medium text-accent-foreground">
                                         {item.badge}
                                     </span>
                                 )}
@@ -162,14 +161,24 @@ function SidebarContent({ collapsed, onCollapse }: SidebarProps) {
                                 key={item.href}
                                 href={item.href}
                                 className={cn(
-                                    "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                                    'group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
                                     isActive
-                                        ? "bg-zinc-100 text-zinc-900"
-                                        : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700",
-                                    collapsed && "justify-center px-2"
+                                        ? 'bg-brand-secondary/10 text-ink'
+                                        : 'text-ink-muted hover:bg-canvas hover:text-ink',
+                                    collapsed && 'justify-center px-2'
                                 )}
                             >
-                                <item.icon className="h-5 w-5 flex-shrink-0" />
+                                {isActive && (
+                                    <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-brand-secondary" />
+                                )}
+                                <item.icon
+                                    className={cn(
+                                        'h-5 w-5 flex-shrink-0',
+                                        isActive
+                                            ? 'text-brand-secondary'
+                                            : 'text-ink-muted'
+                                    )}
+                                />
                                 {!collapsed && <span>{item.title}</span>}
                             </Link>
                         );
@@ -177,13 +186,12 @@ function SidebarContent({ collapsed, onCollapse }: SidebarProps) {
                 </nav>
             </ScrollArea>
 
-            {/* Collapse Toggle (for expanded state from bottom) */}
             {collapsed && onCollapse && (
-                <div className="border-t border-zinc-200/60 p-3">
+                <div className="border-t border-border p-3">
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="w-full h-9 text-zinc-500 hover:text-zinc-900"
+                        className="w-full h-9 text-ink-muted hover:text-ink"
                         onClick={() => onCollapse(false)}
                     >
                         <ChevronRight className="h-4 w-4" />
@@ -199,7 +207,6 @@ export function Sidebar() {
 
     return (
         <>
-            {/* Mobile Sidebar */}
             <Sheet>
                 <SheetTrigger asChild>
                     <Button
@@ -215,21 +222,22 @@ export function Sidebar() {
                 </SheetContent>
             </Sheet>
 
-            {/* Desktop Sidebar */}
             <aside
                 className={cn(
-                    "fixed left-0 top-0 z-30 hidden h-screen border-r border-zinc-200/60 bg-white/80 backdrop-blur-xl transition-all duration-300 lg:block",
-                    collapsed ? "w-20" : "w-64"
+                    'fixed left-0 top-0 z-30 hidden h-screen border-r border-border bg-card/90 backdrop-blur-xl transition-all duration-300 lg:block',
+                    collapsed ? 'w-20' : 'w-64'
                 )}
             >
-                <SidebarContent collapsed={collapsed} onCollapse={setCollapsed} />
+                <SidebarContent
+                    collapsed={collapsed}
+                    onCollapse={setCollapsed}
+                />
             </aside>
 
-            {/* Spacer for main content */}
             <div
                 className={cn(
-                    "hidden lg:block transition-all duration-300",
-                    collapsed ? "w-20" : "w-64"
+                    'hidden lg:block transition-all duration-300',
+                    collapsed ? 'w-20' : 'w-64'
                 )}
             />
         </>

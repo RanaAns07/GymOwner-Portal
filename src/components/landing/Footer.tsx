@@ -1,51 +1,84 @@
 "use client";
 
-import { Instagram, Twitter, Linkedin, Github } from "lucide-react";
+import { Linkedin } from "lucide-react";
+import Link from "next/link";
 
 export default function Footer() {
     return (
-        <footer className="py-12 border-t border-border bg-background">
-            <div className="container mx-auto px-6">
-                <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-                    <div className="flex flex-col gap-2">
-                        <h2 className="text-2xl font-bold tracking-tighter">GYM<span className="text-primary">OWNER</span></h2>
-                        <p className="text-muted-foreground text-sm max-w-xs">
-                            Empowering fitness business owners with state-of-the-art management tools and analytics.
+        <footer id="footer" className="border-t border-border bg-ink text-white">
+            <div className="container mx-auto px-6 py-16">
+                <div className="flex flex-col md:flex-row justify-between gap-12">
+                    <div className="max-w-sm">
+                        <h2 className="text-2xl font-extrabold tracking-tight">
+                            Gym<span className="text-primary">Flow</span>
+                        </h2>
+                        <p className="mt-3 text-sm text-white/55 leading-relaxed">
+                            The operating system for fitness businesses that
+                            outgrow spreadsheets — built for owners running
+                            serious gyms.
                         </p>
                     </div>
 
-                    <div className="flex gap-8">
+                    <div className="flex gap-14">
                         <div className="flex flex-col gap-3">
-                            <span className="font-bold text-sm">Product</span>
-                            <a href="#" className="text-muted-foreground text-sm hover:text-foreground">Features</a>
-                            <a href="#" className="text-muted-foreground text-sm hover:text-foreground">Pricing</a>
-                            <a href="#" className="text-muted-foreground text-sm hover:text-foreground">Security</a>
+                            <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/40">
+                                Product
+                            </span>
+                            <Link
+                                href="/login"
+                                className="text-sm text-white/70 hover:text-primary transition-colors"
+                            >
+                                Owner portal
+                            </Link>
+                            <a
+                                href="#product"
+                                className="text-sm text-white/70 hover:text-primary transition-colors"
+                            >
+                                Overview
+                            </a>
                         </div>
                         <div className="flex flex-col gap-3">
-                            <span className="font-bold text-sm">Company</span>
-                            <a href="#" className="text-muted-foreground text-sm hover:text-foreground">About</a>
-                            <a href="#" className="text-muted-foreground text-sm hover:text-foreground">Blog</a>
-                            <a href="#" className="text-muted-foreground text-sm hover:text-foreground">Contact</a>
+                            <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/40">
+                                Company
+                            </span>
+                            <a
+                                href="#"
+                                className="text-sm text-white/70 hover:text-primary transition-colors"
+                            >
+                                Contact
+                            </a>
+                            <a
+                                href="#"
+                                className="text-sm text-white/70 hover:text-primary transition-colors"
+                            >
+                                Security
+                            </a>
                         </div>
                     </div>
 
-                    <div className="flex flex-col gap-4 items-center md:items-end">
-                        <span className="font-bold text-sm">Join the Community</span>
-                        <div className="flex gap-4">
-                            <a href="#" className="p-2 glass rounded-full hover:text-primary transition-colors"><Twitter className="w-5 h-5" /></a>
-                            <a href="#" className="p-2 glass rounded-full hover:text-primary transition-colors"><Instagram className="w-5 h-5" /></a>
-                            <a href="#" className="p-2 glass rounded-full hover:text-primary transition-colors"><Linkedin className="w-5 h-5" /></a>
-                            <a href="#" className="p-2 glass rounded-full hover:text-primary transition-colors"><Github className="w-5 h-5" /></a>
-                        </div>
+                    <div className="flex flex-col gap-3 md:items-end">
+                        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/40">
+                            Connect
+                        </span>
+                        <a
+                            href="#"
+                            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white/70 hover:border-primary/40 hover:text-primary transition-colors"
+                            aria-label="LinkedIn"
+                        >
+                            <Linkedin className="w-4 h-4" />
+                        </a>
                     </div>
                 </div>
 
-                <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-muted-foreground text-xs text-center md:text-left">
-                    <p>© 2026 GymOwner Portal. All rights reserved.</p>
+                <div className="mt-14 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-white/40 text-xs">
+                    <p>© 2026 GymFlow. All rights reserved.</p>
                     <div className="flex gap-6">
-                        <a href="#" className="hover:text-foreground">Privacy Policy</a>
-                        <a href="#" className="hover:text-foreground">Terms of Service</a>
-                        <a href="#" className="hover:text-foreground">Cookie Policy</a>
+                        <a href="#" className="hover:text-white/70 transition-colors">
+                            Privacy
+                        </a>
+                        <a href="#" className="hover:text-white/70 transition-colors">
+                            Terms
+                        </a>
                     </div>
                 </div>
             </div>
