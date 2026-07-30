@@ -28,19 +28,29 @@ import { useLocations } from '@/hooks/use-locations';
 import { sessionTypeLabels } from '@/types/schedule';
 import type { SessionType } from '@/types/schedule';
 import { Loader2 } from 'lucide-react';
+import {
+    SCHEDULE_WINDOW_END,
+    SCHEDULE_WINDOW_START,
+    clampScheduleStartHour,
+    minutesToTime,
+    refineSessionTimeWindow,
+    timeToMinutes,
+} from '@/lib/schedule-hours';
 
-const sessionSchema = z.object({
-    title: z.string().min(2, 'Title must be at least 2 characters'),
-    type: z.enum(['group-class', 'personal-training', 'workshop', 'open-gym']),
-    trainerId: z.string().min(1, 'Please select a trainer'),
-    date: z.string().min(1, 'Date is required'),
-    startTime: z.string().min(1, 'Start time is required'),
-    endTime: z.string().min(1, 'End time is required'),
-    capacity: z.string().refine((val) => !isNaN(parseInt(val)) && parseInt(val) >= 1, {
-        message: 'Capacity must be at least 1',
-    }),
-    locationId: z.string().min(1, 'Please select a location'),
-});
+const sessionSchema = z
+    .object({
+        title: z.string().min(2, 'Title must be at least 2 characters'),
+        type: z.enum(['group-class', 'personal-training', 'workshop', 'open-gym']),
+        trainerId: z.string().min(1, 'Please select a trainer'),
+        date: z.string().min(1, 'Date is required'),
+        startTime: z.string().min(1, 'Start time is required'),
+        endTime: z.string().min(1, 'End time is required'),
+        capacity: z.string().refine((val) => !isNaN(parseInt(val)) && parseInt(val) >= 1, {
+            message: 'Capacity must be at least 1',
+        }),
+        locationId: z.string().min(1, 'Please select a location'),
+    })
+    .superRefine(refineSessionTimeWindow);
 
 type SessionFormData = z.infer<typeof sessionSchema>;
 
@@ -70,8 +80,15 @@ export function CreateSessionModal({
     };
 
     const getDefaultTime = (hour?: number) => {
-        const h = hour ?? new Date().getHours();
-        return `${h.toString().padStart(2, '0')}:00`;
+        const raw = hour ?? new Date().getHours();
+        const h = clampScheduleStartHour(raw);
+        return minutesToTime(h * 60);
+    };
+
+    const getDefaultEndTime = (startHour?: number) => {
+        const start = clampScheduleStartHour(startHour ?? new Date().getHours());
+        const endMinutes = Math.min(timeToMinutes(SCHEDULE_WINDOW_END), (start + 1) * 60);
+        return minutesToTime(endMinutes);
     };
 
     const {
@@ -89,7 +106,7 @@ export function CreateSessionModal({
             trainerId: '',
             date: getDefaultDate(),
             startTime: getDefaultTime(initialHour),
-            endTime: getDefaultTime(initialHour ? initialHour + 1 : undefined),
+            endTime: getDefaultEndTime(initialHour),
             capacity: '10',
             locationId: '',
         },
@@ -105,7 +122,7 @@ export function CreateSessionModal({
             trainerId: '',
             date: getDefaultDate(),
             startTime: getDefaultTime(initialHour),
-            endTime: getDefaultTime(initialHour ? initialHour + 1 : undefined),
+            endTime: getDefaultEndTime(initialHour),
             capacity: '10',
             locationId: locations?.[0]?.id || '',
         });
@@ -280,6 +297,9 @@ export function CreateSessionModal({
                             <Input
                                 id="startTime"
                                 type="time"
+                                min={SCHEDULE_WINDOW_START}
+                                max={SCHEDULE_WINDOW_END}
+                                step={300}
                                 {...register('startTime')}
                                 className={cn(errors.startTime && 'border-red-500')}
                             />
@@ -295,6 +315,9 @@ export function CreateSessionModal({
                             <Input
                                 id="endTime"
                                 type="time"
+                                min={SCHEDULE_WINDOW_START}
+                                max={SCHEDULE_WINDOW_END}
+                                step={300}
                                 {...register('endTime')}
                                 className={cn(errors.endTime && 'border-red-500')}
                             />
@@ -303,6 +326,9 @@ export function CreateSessionModal({
                             )}
                         </div>
                     </div>
+                    <p className="text-xs text-ink-muted -mt-2">
+                        Sessions must run between 6:00 AM and 8:00 PM.
+                    </p>
 
                     <div className="space-y-2">
                         <Label htmlFor="capacity">Capacity</Label>

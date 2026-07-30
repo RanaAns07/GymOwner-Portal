@@ -40,16 +40,8 @@ export default function HeroSection() {
         >
             <LandingNav />
 
-            {/* Quiet lime / charcoal atmosphere */}
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(168,221,7,0.12),_transparent_55%)]" />
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(11,18,32,0.05),_transparent_50%)]" />
-            <div
-                className="pointer-events-none absolute inset-0 opacity-[0.35]"
-                style={{
-                    backgroundImage:
-                        "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E\")",
-                }}
-            />
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,color-mix(in_srgb,var(--primary)_14%,transparent),transparent_55%)]" />
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,color-mix(in_srgb,var(--ink)_6%,transparent),transparent_50%)]" />
 
             <div className="relative z-10 container mx-auto px-6 min-h-screen flex items-center py-24 lg:py-0">
                 <div className="grid w-full grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-12 items-center">
@@ -69,13 +61,13 @@ export default function HeroSection() {
                         <div className="flex flex-col sm:flex-row gap-3">
                             <Link
                                 href="/login"
-                                className="px-6 py-3.5 bg-ink text-white rounded-full font-semibold text-base flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform shadow-[0_16px_40px_-18px_rgba(11,18,32,0.55)]"
+                                className="px-6 py-3.5 bg-primary text-primary-foreground rounded-full font-semibold text-base flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform shadow-lg shadow-primary/20"
                             >
                                 Open owner portal <ArrowRight className="w-4 h-4" />
                             </Link>
                             <a
                                 href="#footer"
-                                className="px-6 py-3.5 rounded-full font-semibold text-base flex items-center justify-center border border-ink/10 bg-white/60 text-ink backdrop-blur-sm hover:bg-white transition-colors"
+                                className="px-6 py-3.5 rounded-full font-semibold text-base flex items-center justify-center border border-border bg-card/70 text-ink backdrop-blur-sm hover:bg-card transition-colors"
                             >
                                 Talk to sales
                             </a>

@@ -3,9 +3,13 @@
 import { Linkedin } from "lucide-react";
 import Link from "next/link";
 
+/** Footer stays charcoal in both themes for a solid brand close. */
 export default function Footer() {
     return (
-        <footer id="footer" className="border-t border-border bg-ink text-white">
+        <footer
+            id="footer"
+            className="border-t border-white/10 bg-[#0b1220] text-white"
+        >
             <div className="container mx-auto px-6 py-16">
                 <div className="flex flex-col md:flex-row justify-between gap-12">
                     <div className="max-w-sm">

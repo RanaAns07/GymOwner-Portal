@@ -12,7 +12,7 @@ const blocks = [
         height: "14%",
         label: "Strength",
         time: "7:00–8:00",
-        color: "bg-ink",
+        color: "bg-[#0b1220] text-white",
     },
     {
         day: 1,
@@ -28,7 +28,7 @@ const blocks = [
         height: "12%",
         label: "Yoga",
         time: "8:00–9:00",
-        color: "bg-[#2a3344]",
+        color: "bg-[#2a3344] text-white",
     },
     {
         day: 3,
@@ -36,7 +36,7 @@ const blocks = [
         height: "16%",
         label: "PT Session",
         time: "12:00–1:15",
-        color: "bg-[#7aad05] text-primary-foreground",
+        color: "bg-primary/80 text-primary-foreground",
     },
     {
         day: 4,
@@ -44,7 +44,7 @@ const blocks = [
         height: "20%",
         label: "Open Gym",
         time: "9:00–11:00",
-        color: "bg-slate-700",
+        color: "bg-slate-700 text-white",
     },
 ];
 
@@ -145,12 +145,12 @@ export default function HeroVisual() {
                 className="hv-stage relative"
                 style={{ perspective: "1400px" }}
             >
-                <div className="hv-chrome relative rounded-[24px] border border-ink/8 bg-white shadow-[0_40px_100px_-30px_rgba(11,18,32,0.32)] overflow-hidden lg:[transform:rotateY(-8deg)_rotateX(4deg)]">
+                <div className="hv-chrome relative rounded-[24px] border border-border bg-card shadow-[0_40px_100px_-30px_rgba(11,18,32,0.32)] dark:shadow-black/50 overflow-hidden lg:[transform:rotateY(-8deg)_rotateX(4deg)]">
                     <div className="flex items-center gap-2 border-b border-border bg-canvas/80 px-4 py-3">
                         <span className="h-2.5 w-2.5 rounded-full bg-border" />
                         <span className="h-2.5 w-2.5 rounded-full bg-border" />
                         <span className="h-2.5 w-2.5 rounded-full bg-border" />
-                        <div className="ml-3 flex-1 rounded-full bg-white border border-border px-3 py-1">
+                        <div className="ml-3 flex-1 rounded-full bg-card border border-border px-3 py-1">
                             <p className="text-[10px] text-ink-muted font-medium tracking-wide truncate">
                                 app.gymflow.io / schedule
                             </p>
@@ -238,7 +238,7 @@ export default function HeroVisual() {
                                             .map((b) => (
                                                 <div
                                                     key={`${b.day}-${b.label}`}
-                                                    className={`hv-block absolute left-1 right-1 rounded-lg ${b.color} px-1.5 py-1 text-white shadow-sm shadow-ink/10`}
+                                                    className={`hv-block absolute left-1 right-1 rounded-lg ${b.color} px-1.5 py-1 shadow-sm shadow-black/10`}
                                                     style={{
                                                         top: b.top,
                                                         height: b.height,
@@ -267,7 +267,7 @@ export default function HeroVisual() {
                             </div>
                         </div>
 
-                        <div className="bg-ink text-white p-4 flex flex-row sm:flex-col justify-between gap-4 border-t sm:border-t-0 border-border">
+                        <div className="bg-[#0b1220] text-white p-4 flex flex-row sm:flex-col justify-between gap-4 border-t sm:border-t-0 border-border">
                             <div className="grid grid-cols-3 sm:grid-cols-1 gap-4 sm:gap-0 flex-1 sm:flex-none">
                                 <div className="hv-stat sm:mb-5">
                                     <p className="text-[10px] text-white/45 mb-1">
@@ -313,7 +313,7 @@ export default function HeroVisual() {
                                         (c) => (
                                             <span
                                                 key={c}
-                                                className="h-6 w-6 rounded-full border-2 border-ink"
+                                                className="h-6 w-6 rounded-full border-2 border-[#0b1220]"
                                                 style={{ backgroundColor: c }}
                                             />
                                         )

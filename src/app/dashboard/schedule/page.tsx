@@ -80,7 +80,7 @@ export default function SchedulePage() {
                 <div>
                     <h1 className="text-2xl font-extrabold tracking-tight text-ink">Schedule</h1>
                     <p className="mt-1 text-sm text-ink-muted">
-                        Manage classes, sessions, and trainer schedules.
+                        Manage classes and sessions between 6:00 AM and 8:00 PM.
                     </p>
                 </div>
                 <Button

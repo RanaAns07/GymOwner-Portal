@@ -27,20 +27,27 @@ import { useUpdateSession, useDeleteSession } from '@/hooks/use-schedule';
 import { sessionTypeLabels } from '@/types/schedule';
 import type { Session, SessionType } from '@/types/schedule';
 import { Loader2, Trash2 } from 'lucide-react';
+import {
+    SCHEDULE_WINDOW_END,
+    SCHEDULE_WINDOW_START,
+    refineSessionTimeWindow,
+} from '@/lib/schedule-hours';
 
-const sessionSchema = z.object({
-    title: z.string().min(2, 'Title must be at least 2 characters'),
-    type: z.enum(['group-class', 'personal-training', 'workshop', 'open-gym']),
-    trainerId: z.string().min(1, 'Please select a trainer'),
-    date: z.string().min(1, 'Date is required'),
-    startTime: z.string().min(1, 'Start time is required'),
-    endTime: z.string().min(1, 'End time is required'),
-    capacity: z.string().refine((val) => !isNaN(parseInt(val)) && parseInt(val) >= 1, {
-        message: 'Capacity must be at least 1',
-    }),
-    location: z.string().min(1, 'Location is required'),
-    roomUrl: z.string().optional(),
-});
+const sessionSchema = z
+    .object({
+        title: z.string().min(2, 'Title must be at least 2 characters'),
+        type: z.enum(['group-class', 'personal-training', 'workshop', 'open-gym']),
+        trainerId: z.string().min(1, 'Please select a trainer'),
+        date: z.string().min(1, 'Date is required'),
+        startTime: z.string().min(1, 'Start time is required'),
+        endTime: z.string().min(1, 'End time is required'),
+        capacity: z.string().refine((val) => !isNaN(parseInt(val)) && parseInt(val) >= 1, {
+            message: 'Capacity must be at least 1',
+        }),
+        location: z.string().min(1, 'Location is required'),
+        roomUrl: z.string().optional(),
+    })
+    .superRefine(refineSessionTimeWindow);
 
 type SessionFormData = z.infer<typeof sessionSchema>;
 
@@ -233,8 +240,17 @@ export function EditSessionModal({
                             <Input
                                 id="startTime"
                                 type="time"
+                                min={SCHEDULE_WINDOW_START}
+                                max={SCHEDULE_WINDOW_END}
+                                step={300}
                                 {...register('startTime')}
+                                className={cn(errors.startTime && 'border-red-500')}
                             />
+                            {errors.startTime && (
+                                <p className="text-xs text-red-500">
+                                    {errors.startTime.message}
+                                </p>
+                            )}
                         </div>
 
                         <div className="space-y-2">
@@ -242,10 +258,22 @@ export function EditSessionModal({
                             <Input
                                 id="endTime"
                                 type="time"
+                                min={SCHEDULE_WINDOW_START}
+                                max={SCHEDULE_WINDOW_END}
+                                step={300}
                                 {...register('endTime')}
+                                className={cn(errors.endTime && 'border-red-500')}
                             />
+                            {errors.endTime && (
+                                <p className="text-xs text-red-500">
+                                    {errors.endTime.message}
+                                </p>
+                            )}
                         </div>
                     </div>
+                    <p className="text-xs text-ink-muted -mt-2">
+                        Sessions must run between 6:00 AM and 8:00 PM.
+                    </p>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">

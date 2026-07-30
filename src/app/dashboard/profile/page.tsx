@@ -195,7 +195,7 @@ export default function ProfileSettingsPage() {
                                                 onError={handleRemoteError}
                                             />
                                         ) : null}
-                                        <AvatarFallback className="bg-ink text-lg font-medium text-white">
+                                        <AvatarFallback className="bg-[#0b1220] text-lg font-medium text-primary dark:bg-primary dark:text-primary-foreground">
                                             {initials}
                                         </AvatarFallback>
                                     </Avatar>

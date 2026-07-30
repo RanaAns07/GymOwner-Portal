@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Dumbbell } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 
 export default function LandingNav() {
   const [scrolled, setScrolled] = useState(false);
@@ -21,12 +22,12 @@ export default function LandingNav() {
         className={cn(
           "flex items-center justify-between gap-8 transition-all duration-500 ease-out",
           scrolled
-            ? "w-full max-w-3xl rounded-full border border-ink/8 bg-white/80 px-5 py-2.5 shadow-[0_12px_40px_-20px_rgba(11,18,32,0.35)] backdrop-blur-xl"
+            ? "w-full max-w-3xl rounded-full border border-border bg-card/80 px-5 py-2.5 shadow-[0_12px_40px_-20px_rgba(11,18,32,0.35)] backdrop-blur-xl dark:shadow-black/40"
             : "w-full max-w-6xl rounded-2xl border border-transparent bg-transparent px-2 py-3"
         )}
       >
         <Link href="/" className="flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-ink text-primary">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0b1220] text-primary dark:bg-primary dark:text-primary-foreground">
             <Dumbbell className="h-4 w-4" />
           </span>
           <span className="text-sm font-bold tracking-tight text-ink">
@@ -43,12 +44,15 @@ export default function LandingNav() {
           </a>
         </div>
 
-        <Link
-          href="/login"
-          className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-white transition-transform hover:scale-[1.02]"
-        >
-          Sign in
-        </Link>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <Link
+            href="/login"
+            className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-transform hover:scale-[1.02]"
+          >
+            Sign in
+          </Link>
+        </div>
       </nav>
     </header>
   );

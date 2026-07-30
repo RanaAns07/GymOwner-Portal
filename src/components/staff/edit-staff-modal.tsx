@@ -228,7 +228,7 @@ export function EditStaffModal({ open, onOpenChange, staff }: EditStaffModalProp
                                     alt={staff ? `${staff.firstName} ${staff.lastName}` : 'Staff'}
                                     referrerPolicy="no-referrer"
                                 />
-                                <AvatarFallback className="bg-ink text-sm font-medium text-white">
+                                <AvatarFallback className="bg-[#0b1220] text-sm font-medium text-primary dark:bg-primary dark:text-primary-foreground">
                                     {initials}
                                 </AvatarFallback>
                             </Avatar>
