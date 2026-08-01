@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -14,7 +15,6 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ClientDetailsModal } from '@/components/clients/client-details-modal';
 import { useClients } from '@/hooks/use-clients';
 import type { Client } from '@/types/clients';
 import { clientStatusConfig } from '@/types/clients';
@@ -32,19 +32,11 @@ import {
 import { PageReveal } from '@/components/dashboard/PageReveal';
 
 export default function ClientsPage() {
+    const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
-    const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-    const [detailsOpen, setDetailsOpen] = useState(false);
 
     const { data: clients, isLoading } = useClients();
-
-    // Keep open details modal in sync after package assign / list refetch
-    useEffect(() => {
-        if (!selectedClient || !clients) return;
-        const fresh = clients.find((c) => c.id === selectedClient.id);
-        if (fresh) setSelectedClient(fresh);
-    }, [clients, selectedClient?.id]);
 
     const filteredClients = clients?.filter((client) => {
         const matchesSearch =
@@ -63,8 +55,7 @@ export default function ClientsPage() {
     const totalCount = clients?.length || 0;
 
     const openDetails = (client: Client) => {
-        setSelectedClient(client);
-        setDetailsOpen(true);
+        router.push(`/dashboard/clients/${client.id}`);
     };
 
     return (
@@ -277,11 +268,6 @@ export default function ClientsPage() {
                 </Table>
             </div>
 
-            <ClientDetailsModal
-                open={detailsOpen}
-                onOpenChange={setDetailsOpen}
-                client={selectedClient}
-            />
         </PageReveal>
     );
 }

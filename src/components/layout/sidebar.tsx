@@ -20,6 +20,11 @@ import {
     LayoutDashboard,
     Settings,
     MapPin,
+    DoorOpen,
+    ClipboardList,
+    LogIn,
+    Package,
+    Landmark,
 } from 'lucide-react';
 
 interface NavItem {
@@ -46,6 +51,11 @@ const mainNavItems: NavItem[] = [
         icon: MapPin,
     },
     {
+        title: 'Rooms',
+        href: '/dashboard/rooms',
+        icon: DoorOpen,
+    },
+    {
         title: 'Pricing',
         href: '/dashboard/pricing',
         icon: CreditCard,
@@ -59,6 +69,26 @@ const mainNavItems: NavItem[] = [
         title: 'Schedule',
         href: '/dashboard/schedule',
         icon: Calendar,
+    },
+    {
+        title: 'Operations',
+        href: '/dashboard/operations',
+        icon: ClipboardList,
+    },
+    {
+        title: 'Access',
+        href: '/dashboard/access',
+        icon: LogIn,
+    },
+    {
+        title: 'Inventory',
+        href: '/dashboard/inventory',
+        icon: Package,
+    },
+    {
+        title: 'Finance',
+        href: '/dashboard/finance',
+        icon: Landmark,
     },
 ];
 

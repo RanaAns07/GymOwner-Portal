@@ -14,7 +14,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import type { PricingPlan } from '@/types/pricing';
 import { planTypeLabels, billingCycleLabels, planStatusConfig } from '@/types/pricing';
-import { Check, MoreVertical, Edit, Archive, Trash2, Users, Sparkles, MapPin } from 'lucide-react';
+import { Check, MoreVertical, Edit, Archive, Trash2, Users, Sparkles, MapPin, Eye } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface PricingCardProps {
     plan: PricingPlan;
@@ -25,15 +26,17 @@ interface PricingCardProps {
 }
 
 export function PricingCard({ plan, onEdit, onArchive, onDelete, featured }: PricingCardProps) {
+    const router = useRouter();
     const status = planStatusConfig[plan.status ?? 'active'];
     const isPopular = (plan.subscriberCount ?? 0) > 50;
 
     return (
         <Card
             className={cn(
-                "relative flex flex-col overflow-hidden border-border bg-card transition-all duration-300 hover:shadow-lg",
+                "relative flex cursor-pointer flex-col overflow-hidden border-border bg-card transition-all duration-300 hover:shadow-lg",
                 featured && "border-primary/30 ring-2 ring-primary/25"
             )}
+            onClick={() => router.push(`/dashboard/pricing/${plan.id}`)}
         >
             {/* Popular Badge */}
             {isPopular && (
@@ -67,11 +70,22 @@ export function PricingCard({ plan, onEdit, onArchive, onDelete, featured }: Pri
                     {/* Actions */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-ink-muted">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-ink-muted"
+                                onClick={(e) => e.stopPropagation()}
+                            >
                                 <MoreVertical className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                            <DropdownMenuItem
+                                onClick={() => router.push(`/dashboard/pricing/${plan.id}`)}
+                            >
+                                <Eye className="mr-2 h-4 w-4" />
+                                View details
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => onEdit?.(plan)}>
                                 <Edit className="mr-2 h-4 w-4" />
                                 Edit Plan

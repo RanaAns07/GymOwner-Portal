@@ -10,11 +10,13 @@ import {
     fetchRecurrenceRulesFromApi,
 } from '@/lib/api/schedule-api';
 import type { CreateSessionInput, Session } from '@/types/schedule';
+import { useLocationFilter } from '@/providers/location-context';
 
 export const scheduleKeys = {
     all: ['schedule'] as const,
     weeks: () => [...scheduleKeys.all, 'week'] as const,
-    week: (date: string) => [...scheduleKeys.weeks(), date] as const,
+    week: (date: string, locationId?: string) =>
+        [...scheduleKeys.weeks(), date, locationId ?? 'default'] as const,
     details: () => [...scheduleKeys.all, 'detail'] as const,
     detail: (id: string) => [...scheduleKeys.details(), id] as const,
     locations: () => [...scheduleKeys.all, 'locations'] as const,
@@ -35,9 +37,10 @@ function weekKeyFromDate(date?: Date): string {
 }
 
 export function useSessions(weekStart?: Date) {
+    const { locationId } = useLocationFilter();
     return useQuery({
-        queryKey: scheduleKeys.week(weekKeyFromDate(weekStart)),
-        queryFn: () => fetchSessionsFromApi(weekStart),
+        queryKey: scheduleKeys.week(weekKeyFromDate(weekStart), locationId),
+        queryFn: () => fetchSessionsFromApi(weekStart, locationId),
     });
 }
 

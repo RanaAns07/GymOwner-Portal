@@ -16,6 +16,7 @@ import { usePricingPlans, useDeletePricingPlan } from '@/hooks/use-pricing';
 import { Plus, CreditCard, Package, TrendingUp, DollarSign, Loader2 } from 'lucide-react';
 import { PageReveal } from '@/components/dashboard/PageReveal';
 import type { PricingPlan } from '@/types/pricing';
+import { useLocationFilter } from '@/providers/location-context';
 
 export default function PricingPage() {
     const [activeTab, setActiveTab] = useState<string>('all');
@@ -25,8 +26,12 @@ export default function PricingPage() {
 
     const { data: plans, isLoading } = usePricingPlans();
     const deletePlan = useDeletePricingPlan();
+    const { locationId, isAllLocations } = useLocationFilter();
 
     const filteredPlans = plans?.filter((plan) => {
+        if (!isAllLocations && plan.locationId && plan.locationId !== locationId) {
+            return false;
+        }
         const status = plan.status ?? (plan.isActive === false ? 'archived' : 'active');
         if (activeTab === 'all') return status === 'active';
         if (activeTab === 'membership') return plan.type === 'membership' && status === 'active';

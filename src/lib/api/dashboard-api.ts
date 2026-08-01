@@ -64,8 +64,12 @@ export async function fetchReportFromApi(query: DashboardReportQuery): Promise<u
 /**
  * Aggregate dashboard stats for the owner portal home.
  * Uses reports + staff/clients/sessions list endpoints.
+ *
+ * @param locationFilter — concrete UUID, 'all', or omit for default location
  */
-export async function fetchDashboardSummaryFromApi(): Promise<DashboardSummary> {
+export async function fetchDashboardSummaryFromApi(
+    locationFilter?: string | 'all'
+): Promise<DashboardSummary> {
     const today = new Date();
     const start = new Date(today);
     start.setDate(today.getDate() - 7);
@@ -73,11 +77,15 @@ export async function fetchDashboardSummaryFromApi(): Promise<DashboardSummary> 
     const endDate = today.toISOString().split('T')[0];
 
     let locationId: string | undefined;
-    try {
-        const location = await ensureDefaultLocation();
-        locationId = location.id;
-    } catch {
-        locationId = undefined;
+    if (locationFilter && locationFilter !== 'all') {
+        locationId = locationFilter;
+    } else if (locationFilter !== 'all') {
+        try {
+            const location = await ensureDefaultLocation();
+            locationId = location.id;
+        } catch {
+            locationId = undefined;
+        }
     }
 
     const reportQuery = {
@@ -86,10 +94,12 @@ export async function fetchDashboardSummaryFromApi(): Promise<DashboardSummary> 
         end_date: endDate,
     };
 
+    const sessionLocation = locationFilter ?? locationId;
+
     const [staff, clients, sessions, fillRate, noShow, staffUtilization] = await Promise.all([
         fetchStaffFromApi().catch(() => []),
         fetchClientsFromApi().catch(() => []),
-        fetchSessionsFromApi(today).catch(() => []),
+        fetchSessionsFromApi(today, sessionLocation).catch(() => []),
         fetchReportFromApi({ type: 'fill-rate', ...reportQuery }).catch(() => null),
         fetchReportFromApi({ type: 'no-show', ...reportQuery }).catch(() => null),
         fetchReportFromApi({ type: 'staff-utilization', ...reportQuery }).catch(() => null),

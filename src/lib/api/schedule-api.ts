@@ -38,6 +38,7 @@ export interface BackendClassTemplate {
     id: string;
     location: string;
     name: string;
+    description?: string;
     duration_min: number;
     default_capacity?: number;
     intensity?: string;
@@ -269,6 +270,24 @@ export async function createRoomApi(payload: {
     return apiClient.post<BackendRoom>('/scheduling/rooms/', payload);
 }
 
+/** PATCH /api/v1/scheduling/rooms/{id}/ */
+export async function updateRoomApi(
+    id: string,
+    payload: Partial<{
+        location: string;
+        name: string;
+        capacity: number;
+        equipment_tags: string[];
+    }>
+): Promise<BackendRoom> {
+    return apiClient.patch<BackendRoom>(`/scheduling/rooms/${id}/`, payload);
+}
+
+/** DELETE /api/v1/scheduling/rooms/{id}/ */
+export async function deleteRoomApi(id: string): Promise<void> {
+    await apiClient.delete(`/scheduling/rooms/${id}/`);
+}
+
 // ─── Class templates ─────────────────────────────────────────────────────────
 
 /** GET /api/v1/scheduling/class-templates/ */
@@ -283,12 +302,34 @@ export async function fetchClassTemplatesFromApi(): Promise<BackendClassTemplate
 export async function createClassTemplateApi(payload: {
     location: string;
     name: string;
+    description?: string;
     duration_min: number;
     default_capacity?: number;
     intensity?: string;
     category?: string;
 }): Promise<BackendClassTemplate> {
     return apiClient.post<BackendClassTemplate>('/scheduling/class-templates/', payload);
+}
+
+/** PATCH /api/v1/scheduling/class-templates/{id}/ */
+export async function updateClassTemplateApi(
+    id: string,
+    payload: Partial<{
+        location: string;
+        name: string;
+        description: string;
+        duration_min: number;
+        default_capacity: number;
+        intensity: string;
+        category: string;
+    }>
+): Promise<BackendClassTemplate> {
+    return apiClient.patch<BackendClassTemplate>(`/scheduling/class-templates/${id}/`, payload);
+}
+
+/** DELETE /api/v1/scheduling/class-templates/{id}/ */
+export async function deleteClassTemplateApi(id: string): Promise<void> {
+    await apiClient.delete(`/scheduling/class-templates/${id}/`);
 }
 
 // ─── Recurrence rules (creates sessions) ─────────────────────────────────────
@@ -317,6 +358,22 @@ export async function createRecurrenceRuleApi(payload: {
     return apiClient.post<BackendRecurrenceRule>('/scheduling/recurrence-rules/', payload);
 }
 
+/** PATCH /api/v1/scheduling/recurrence-rules/{id}/ */
+export async function updateRecurrenceRuleApi(
+    id: string,
+    payload: Partial<{
+        template: string;
+        days_of_week: string[];
+        start_date: string;
+        end_date: string;
+        start_time: string;
+        room: string;
+        staff: string;
+    }>
+): Promise<BackendRecurrenceRule> {
+    return apiClient.patch<BackendRecurrenceRule>(`/scheduling/recurrence-rules/${id}/`, payload);
+}
+
 /** DELETE /api/v1/scheduling/recurrence-rules/{id}/ */
 export async function deleteRecurrenceRuleApi(id: string): Promise<boolean> {
     try {
@@ -329,25 +386,13 @@ export async function deleteRecurrenceRuleApi(id: string): Promise<boolean> {
 
 // ─── Sessions ────────────────────────────────────────────────────────────────
 
-/**
- * GET /api/v1/scheduling/sessions/
- * Query: location (required), date_from, date_to
- */
-export async function fetchSessionsFromApi(weekStart?: Date): Promise<Session[]> {
-    const location = await ensureDefaultLocation();
-
-    const start = weekStart ? new Date(weekStart) : new Date();
-    // Normalize to Monday of the week if a weekStart was provided loosely
-    const day = start.getDay();
-    const monday = new Date(start);
-    monday.setDate(start.getDate() - (day === 0 ? 6 : day - 1));
-    monday.setHours(0, 0, 0, 0);
-
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
-
+async function fetchSessionsForLocation(
+    locationId: string,
+    monday: Date,
+    sunday: Date
+): Promise<Session[]> {
     const params = new URLSearchParams({
-        location: location.id,
+        location: locationId,
         date_from: formatLocalDateForApi(monday),
         date_to: formatLocalDateForApi(sunday),
     });
@@ -358,8 +403,52 @@ export async function fetchSessionsFromApi(weekStart?: Date): Promise<Session[]>
 
     return unwrapList(response)
         .map(mapBackendSessionToSession)
-        // Soft-deleted / cancelled sessions should not appear on the calendar
         .filter((session) => session.status !== 'cancelled');
+}
+
+/**
+ * GET /api/v1/scheduling/sessions/
+ * Query: location, date_from, date_to
+ *
+ * Pass locationId as a concrete UUID, 'all' to merge every location,
+ * or omit to use the first/default location.
+ */
+export async function fetchSessionsFromApi(
+    weekStart?: Date,
+    locationId?: string | 'all'
+): Promise<Session[]> {
+    const start = weekStart ? new Date(weekStart) : new Date();
+    const day = start.getDay();
+    const monday = new Date(start);
+    monday.setDate(start.getDate() - (day === 0 ? 6 : day - 1));
+    monday.setHours(0, 0, 0, 0);
+
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    if (locationId === 'all') {
+        const locations = await fetchLocationsFromApi();
+        if (locations.length === 0) return [];
+        const batches = await Promise.all(
+            locations.map((loc) =>
+                fetchSessionsForLocation(loc.id, monday, sunday).catch(() => [])
+            )
+        );
+        const seen = new Set<string>();
+        return batches.flat().filter((session) => {
+            if (seen.has(session.id)) return false;
+            seen.add(session.id);
+            return true;
+        });
+    }
+
+    let resolvedLocationId = locationId;
+    if (!resolvedLocationId) {
+        const location = await ensureDefaultLocation();
+        resolvedLocationId = location.id;
+    }
+
+    return fetchSessionsForLocation(resolvedLocationId, monday, sunday);
 }
 
 /** GET /api/v1/scheduling/sessions/{id}/ */

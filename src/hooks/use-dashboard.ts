@@ -4,17 +4,23 @@ import {
     fetchReportFromApi,
     type DashboardReportQuery,
 } from '@/lib/api/dashboard-api';
+import { useLocationFilter } from '@/providers/location-context';
 
 export const dashboardKeys = {
     all: ['dashboard'] as const,
-    summary: () => [...dashboardKeys.all, 'summary'] as const,
+    summary: (locationId?: string) =>
+        [...dashboardKeys.all, 'summary', locationId ?? 'default'] as const,
     report: (query: DashboardReportQuery) => [...dashboardKeys.all, 'report', query] as const,
 };
 
 export function useDashboardSummary() {
+    const { locationId, isLoading: locationsLoading } = useLocationFilter();
     return useQuery({
-        queryKey: dashboardKeys.summary(),
-        queryFn: fetchDashboardSummaryFromApi,
+        queryKey: dashboardKeys.summary(locationId),
+        queryFn: () => fetchDashboardSummaryFromApi(locationId),
+        // Wait until location preference is hydrated so we don't fire twice
+        // (default → 'all') and leave the UI stuck on skeletons.
+        enabled: !locationsLoading,
         staleTime: 60_000,
     });
 }

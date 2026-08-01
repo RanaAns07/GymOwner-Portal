@@ -15,14 +15,20 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/providers/auth-context';
 import { ThemeToggle } from '@/components/layout/theme-toggle';
+import { LocationSwitcher } from '@/components/layout/location-switcher';
 
 const pathNameMap: Record<string, string> = {
     dashboard: 'Dashboard',
     staff: 'Staff',
     locations: 'Locations',
+    rooms: 'Rooms',
     pricing: 'Pricing',
     clients: 'Clients',
     schedule: 'Schedule',
+    operations: 'Operations',
+    access: 'Facility Access',
+    inventory: 'Inventory',
+    finance: 'Finance',
     settings: 'Settings',
     profile: 'Profile Settings',
     help: 'Help & Support',
@@ -37,7 +43,11 @@ function Breadcrumbs() {
             {segments.map((segment, index) => {
                 const href = '/' + segments.slice(0, index + 1).join('/');
                 const isLast = index === segments.length - 1;
-                const name = pathNameMap[segment] || segment;
+                const looksLikeId =
+                    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+                        segment
+                    ) || /^\d+$/.test(segment);
+                const name = pathNameMap[segment] || (looksLikeId ? 'Details' : segment);
 
                 return (
                     <div key={href} className="flex items-center">
@@ -85,6 +95,7 @@ export function Header() {
             </div>
 
             <div className="flex items-center gap-2">
+                <LocationSwitcher className="hidden sm:flex" />
                 <ThemeToggle />
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>

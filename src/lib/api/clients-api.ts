@@ -300,3 +300,162 @@ export async function fetchClientWithPassesFromApi(clientId: string): Promise<{
         return null;
     }
 }
+
+/** PATCH /api/v1/scheduling/packages/{id}/ */
+export async function updatePackageApi(
+    id: string,
+    payload: Partial<{
+        client: string;
+        package_type: string;
+        credits_remaining: number;
+        expires_at: string;
+    }>
+): Promise<void> {
+    await apiClient.patch(`/scheduling/packages/${id}/`, payload);
+}
+
+/** DELETE /api/v1/scheduling/packages/{id}/ */
+export async function deletePackageApi(id: string): Promise<void> {
+    await apiClient.delete(`/scheduling/packages/${id}/`);
+}
+
+/** POST /api/v1/scheduling/staff-assignments/ */
+export async function createStaffAssignmentApi(payload: {
+    staff: string;
+    client: string;
+}): Promise<BackendStaffAssignment> {
+    return apiClient.post<BackendStaffAssignment>(
+        '/scheduling/staff-assignments/',
+        payload
+    );
+}
+
+/** PATCH /api/v1/scheduling/staff-assignments/{id}/ */
+export async function updateStaffAssignmentApi(
+    id: string,
+    payload: { staff: string; client: string }
+): Promise<BackendStaffAssignment> {
+    return apiClient.patch<BackendStaffAssignment>(
+        `/scheduling/staff-assignments/${id}/`,
+        payload
+    );
+}
+
+/** DELETE /api/v1/scheduling/staff-assignments/{id}/ */
+export async function deleteStaffAssignmentApi(id: string): Promise<void> {
+    await apiClient.delete(`/scheduling/staff-assignments/${id}/`);
+}
+
+/** GET /api/v1/scheduling/api/view-all-clients/ */
+export async function fetchViewAllClientsFromApi(
+    status = 'Active'
+): Promise<unknown[]> {
+    const params = new URLSearchParams({ status });
+    const response = await apiClient.get<unknown[] | ApiPaginatedResponse<unknown>>(
+        `/scheduling/api/view-all-clients/?${params.toString()}`
+    );
+    return unwrapList(response);
+}
+
+export interface PaginatedDetailedResponse<T> {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: T[];
+    page?: number;
+    page_size?: number;
+}
+
+/** GET /api/v1/users/profiles/clients-detailed-scheduling/ */
+export async function fetchClientsDetailedSchedulingFromApi(params?: {
+    page?: number;
+    page_size?: number;
+    search?: string;
+}): Promise<PaginatedDetailedResponse<Record<string, unknown>>> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set('page', String(params.page));
+    if (params?.page_size) searchParams.set('page_size', String(params.page_size));
+    if (params?.search) searchParams.set('search', params.search);
+    const qs = searchParams.toString();
+    return apiClient.get(
+        `/users/profiles/clients-detailed-scheduling/${qs ? `?${qs}` : ''}`
+    );
+}
+
+/** GET /api/v1/users/profiles/staff-detailed-scheduling/ */
+export async function fetchStaffDetailedSchedulingFromApi(params?: {
+    page?: number;
+    page_size?: number;
+    search?: string;
+}): Promise<PaginatedDetailedResponse<Record<string, unknown>>> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set('page', String(params.page));
+    if (params?.page_size) searchParams.set('page_size', String(params.page_size));
+    if (params?.search) searchParams.set('search', params.search);
+    const qs = searchParams.toString();
+    return apiClient.get(
+        `/users/profiles/staff-detailed-scheduling/${qs ? `?${qs}` : ''}`
+    );
+}
+
+/** GET /api/v1/users/profiles/{id}/detailed-scheduling/ */
+export async function fetchUserDetailedSchedulingFromApi(
+    id: string
+): Promise<Record<string, unknown>> {
+    return apiClient.get(`/users/profiles/${id}/detailed-scheduling/`);
+}
+
+/** POST /api/v1/users/profiles/{id}/deactivate/ — toggles active status */
+export async function toggleUserDeactivateApi(id: string): Promise<unknown> {
+    return apiClient.post(`/users/profiles/${id}/deactivate/`, {});
+}
+
+/** GET /api/v1/users/profiles/clients-detailed-nutrition/ */
+export async function fetchClientsDetailedNutritionFromApi(params?: {
+    page?: number;
+    page_size?: number;
+    search?: string;
+    id?: string;
+}): Promise<PaginatedDetailedResponse<Record<string, unknown>>> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set('page', String(params.page));
+    if (params?.page_size) searchParams.set('page_size', String(params.page_size));
+    if (params?.search) searchParams.set('search', params.search);
+    if (params?.id) searchParams.set('id', params.id);
+    const qs = searchParams.toString();
+    return apiClient.get(
+        `/users/profiles/clients-detailed-nutrition/${qs ? `?${qs}` : ''}`
+    );
+}
+
+/** GET /api/v1/users/profiles/{id}/detailed-nutrition/ */
+export async function fetchClientDetailedNutritionFromApi(
+    id: string
+): Promise<Record<string, unknown>> {
+    return apiClient.get(`/users/profiles/${id}/detailed-nutrition/`);
+}
+
+/** GET /api/v1/users/profiles/clients-detailed-reflection/ */
+export async function fetchClientsDetailedReflectionFromApi(params?: {
+    page?: number;
+    page_size?: number;
+    search?: string;
+    id?: string;
+}): Promise<PaginatedDetailedResponse<Record<string, unknown>>> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set('page', String(params.page));
+    if (params?.page_size) searchParams.set('page_size', String(params.page_size));
+    if (params?.search) searchParams.set('search', params.search);
+    if (params?.id) searchParams.set('id', params.id);
+    const qs = searchParams.toString();
+    return apiClient.get(
+        `/users/profiles/clients-detailed-reflection/${qs ? `?${qs}` : ''}`
+    );
+}
+
+/** GET /api/v1/users/profiles/{id}/detailed-reflection/ */
+export async function fetchClientDetailedReflectionFromApi(
+    id: string
+): Promise<Record<string, unknown>> {
+    return apiClient.get(`/users/profiles/${id}/detailed-reflection/`);
+}

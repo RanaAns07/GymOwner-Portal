@@ -25,8 +25,9 @@ import {
 export default function DashboardPage() {
     const { user } = useAuth();
     const reduce = useReducedMotion();
-    const { data, isLoading, isError, error, refetch, isFetching } =
+    const { data, isLoading, isPending, isError, error, refetch, isFetching } =
         useDashboardSummary();
+    const showSkeletons = isLoading || isPending;
 
     const greetingName =
         user?.nickname ||
@@ -118,12 +119,13 @@ export default function DashboardPage() {
             )}
 
             <motion.div
+                key={showSkeletons ? 'dashboard-metrics-loading' : 'dashboard-metrics-ready'}
                 variants={reduce ? undefined : staggerContainer}
                 initial={reduce ? false : 'hidden'}
                 animate={reduce ? undefined : 'show'}
                 className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
             >
-                {isLoading
+                {showSkeletons
                     ? Array.from({ length: 6 }).map((_, i) => (
                           <div
                               key={i}

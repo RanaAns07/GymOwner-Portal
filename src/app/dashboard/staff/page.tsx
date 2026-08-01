@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -13,7 +14,6 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StaffGrid } from '@/components/staff/staff-grid';
 import { AddStaffModal } from '@/components/staff/add-staff-modal';
-import { ViewStaffModal } from '@/components/staff/view-staff-modal';
 import { EditStaffModal } from '@/components/staff/edit-staff-modal';
 import { RemoveStaffDialog } from '@/components/staff/remove-staff-dialog';
 import { useStaffMembers, useDeleteStaffMember } from '@/hooks/use-staff';
@@ -36,13 +36,13 @@ const STATUS_FILTER_OPTIONS = [
 ] as const;
 
 export default function StaffPage() {
+    const router = useRouter();
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState<string>('all');
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
-    const [viewOpen, setViewOpen] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
     const [removeOpen, setRemoveOpen] = useState(false);
 
@@ -50,8 +50,7 @@ export default function StaffPage() {
     const deleteStaff = useDeleteStaffMember();
 
     const openView = (member: StaffMember) => {
-        setSelectedStaff(member);
-        setViewOpen(true);
+        router.push(`/dashboard/staff/${member.id}`);
     };
 
     const openEdit = (member: StaffMember) => {
@@ -235,16 +234,6 @@ export default function StaffPage() {
             />
 
             <AddStaffModal open={isAddModalOpen} onOpenChange={setIsAddModalOpen} />
-
-            <ViewStaffModal
-                open={viewOpen}
-                onOpenChange={setViewOpen}
-                staff={selectedStaff}
-                onEdit={(member) => {
-                    setViewOpen(false);
-                    openEdit(member);
-                }}
-            />
 
             <EditStaffModal
                 open={editOpen}

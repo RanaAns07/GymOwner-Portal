@@ -30,10 +30,11 @@ export function PageReveal({ children, className }: PageRevealProps) {
   );
 }
 
+/** Container opacity must stay at 1 — otherwise children that mount after
+ *  the first animate cycle (e.g. when a query finishes) stay stuck invisible. */
 export const staggerContainer = {
-  hidden: { opacity: 0 },
+  hidden: {},
   show: {
-    opacity: 1,
     transition: { staggerChildren: 0.055, delayChildren: 0.06 },
   },
 };

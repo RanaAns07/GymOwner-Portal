@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { WeeklyCalendar } from '@/components/schedule/weekly-calendar';
 import { CreateSessionModal } from '@/components/schedule/create-session-modal';
-import { EditSessionModal } from '@/components/schedule/edit-session-modal';
 import { useSessions } from '@/hooks/use-schedule';
 import { sessionTypeLabels, sessionTypeColors } from '@/types/schedule';
 import type { Session } from '@/types/schedule';
@@ -13,13 +13,11 @@ import { PageReveal } from '@/components/dashboard/PageReveal';
 import { cn } from '@/lib/utils';
 
 export default function SchedulePage() {
+    const router = useRouter();
     const [currentWeek, setCurrentWeek] = useState(new Date());
     const { data: sessions, isLoading } = useSessions(currentWeek);
 
-    // Modal state
     const [createModalOpen, setCreateModalOpen] = useState(false);
-    const [editModalOpen, setEditModalOpen] = useState(false);
-    const [selectedSession, setSelectedSession] = useState<Session | null>(null);
     const [slotDate, setSlotDate] = useState<Date | undefined>();
     const [slotHour, setSlotHour] = useState<number | undefined>();
 
@@ -58,8 +56,7 @@ export default function SchedulePage() {
     };
 
     const handleSessionClick = (session: Session) => {
-        setSelectedSession(session);
-        setEditModalOpen(true);
+        router.push(`/dashboard/schedule/${session.id}`);
     };
 
     const handleNewSession = () => {
@@ -179,19 +176,11 @@ export default function SchedulePage() {
                 onSessionClick={handleSessionClick}
             />
 
-            {/* Create Session Modal */}
             <CreateSessionModal
                 open={createModalOpen}
                 onOpenChange={setCreateModalOpen}
                 initialDate={slotDate}
                 initialHour={slotHour}
-            />
-
-            {/* Edit Session Modal */}
-            <EditSessionModal
-                open={editModalOpen}
-                onOpenChange={setEditModalOpen}
-                session={selectedSession}
             />
         </PageReveal>
     );

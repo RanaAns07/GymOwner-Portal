@@ -353,6 +353,23 @@ export async function createStaffAvailabilityApi(payload: {
     return apiClient.post<BackendStaffAvailability>('/scheduling/staff-availability/', payload);
 }
 
+/** PATCH /api/v1/scheduling/staff-availability/{id}/ */
+export async function updateStaffAvailabilityApi(
+    id: string,
+    payload: Partial<{
+        staff: string;
+        weekday_or_date: string;
+        start_time: string;
+        end_time: string;
+        is_blackout: boolean;
+    }>
+): Promise<BackendStaffAvailability> {
+    return apiClient.patch<BackendStaffAvailability>(
+        `/scheduling/staff-availability/${id}/`,
+        payload
+    );
+}
+
 /** DELETE /api/v1/scheduling/staff-availability/{id}/ */
 export async function deleteStaffAvailabilityApi(id: string): Promise<boolean> {
     try {
@@ -361,4 +378,22 @@ export async function deleteStaffAvailabilityApi(id: string): Promise<boolean> {
     } catch {
         return false;
     }
+}
+
+/** PATCH /api/v1/scheduling/staff-locations/{id}/ */
+export async function updateStaffLocationApi(
+    id: string,
+    payload: { staff: string; location: string }
+): Promise<BackendStaffLocation> {
+    const response = await apiClient.patch<Record<string, unknown>>(
+        `/scheduling/staff-locations/${id}/`,
+        payload
+    );
+    const mapped = mapStaffLocation(response);
+    if (mapped) return mapped;
+    return {
+        id,
+        staff: payload.staff,
+        location: payload.location,
+    };
 }

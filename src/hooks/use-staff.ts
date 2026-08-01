@@ -7,6 +7,11 @@ import {
     updateStaffMemberApi,
     deleteStaffMemberApi,
 } from '@/lib/api/staff-api';
+import {
+    fetchStaffDetailedSchedulingFromApi,
+    fetchUserDetailedSchedulingFromApi,
+    toggleUserDeactivateApi,
+} from '@/lib/api/clients-api';
 import type { StaffMember, CreateStaffInput, UpdateStaffInput } from '@/types/staff';
 
 // Query keys
@@ -16,6 +21,10 @@ export const staffKeys = {
     list: (filters: Record<string, unknown>) => [...staffKeys.lists(), filters] as const,
     details: () => [...staffKeys.all, 'detail'] as const,
     detail: (id: string) => [...staffKeys.details(), id] as const,
+    detailedList: (params: Record<string, unknown>) =>
+        [...staffKeys.all, 'detailed-list', params] as const,
+    detailedScheduling: (id: string) =>
+        [...staffKeys.detail(id), 'detailed-scheduling'] as const,
 };
 
 // Fetch all staff members
@@ -114,6 +123,41 @@ export function useDeleteStaffMember() {
             const message = error instanceof Error ? error.message : 'Failed to remove staff member';
             toast.error(message);
             console.error('Delete staff error:', error);
+        },
+    });
+}
+
+export function useStaffDetailedSchedulingList(params?: {
+    page?: number;
+    page_size?: number;
+    search?: string;
+}) {
+    return useQuery({
+        queryKey: staffKeys.detailedList(params || {}),
+        queryFn: () => fetchStaffDetailedSchedulingFromApi(params),
+    });
+}
+
+export function useStaffDetailedScheduling(id: string, enabled = true) {
+    return useQuery({
+        queryKey: staffKeys.detailedScheduling(id),
+        queryFn: () => fetchUserDetailedSchedulingFromApi(id),
+        enabled: enabled && !!id,
+    });
+}
+
+export function useToggleStaffDeactivate() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id: string) => toggleUserDeactivateApi(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: staffKeys.lists() });
+            toast.success('Staff account status updated.');
+        },
+        onError: (error) => {
+            toast.error(
+                error instanceof Error ? error.message : 'Failed to update staff status'
+            );
         },
     });
 }
